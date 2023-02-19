@@ -1,37 +1,26 @@
 ### Example of using the library programmatically
 
 ```javascript
-var migrateMongoose = require('migrate-mongoose');
+import { Migrator } from 'migrate-mongoose-esm'
 
-// Define all your variables
-var 
- migrationsDir = '/path/to/migrations/',
- templatePath,
- dbUrl = 'mongodb://localhost/db',
- collectionName = 'myMigrations',
- autosync = true;
+const migrator = new Migrator({
+  migrationsPath: '/path/to/migrations/', // Path to migrations directory
+  templatePath: '', // The template to use when creating migrations needs up and down functions exposed
+  dbConnectionUri: 'mongodb://localhost/db', // mongo url
+  collectionName: 'myMigrations', // collection name to use for migrations (defaults to 'migrations')
+  autosync: true // if making a CLI app, set this to false to prompt the user, otherwise true
+})
 
-let migrator = new migrateMongoose({
-  migrationsPath:  migrationsDir, // Path to migrations directory
-  templatePath: templatePath, // The template to use when creating migrations needs up and down functions exposed
-  dbConnectionUri: dbUrl, // mongo url
-  collectionName:  collectionName, // collection name to use for migrations (defaults to 'migrations')
-  autosync: autosync // if making a CLI app, set this to false to prompt the user, otherwise true
-});
-
-
-var migrationName = 'myNewMigration', promise;
+const migrationName = 'myNewMigration'
 
 // Create a new migration
-migrator.create(migrationName).then(()=> {
-  console.log(`Migration created. Run `+ `mongoose-migrate up ${migrationName}`.cyan + ` to apply the migration.`);
-});
+await migrator.create(migrationName)
 
 // Migrate Up
-promise = migrator.run('up', migrationName);
+await migrator.run('up', migrationName)
 
 // Migrate Down
-promise = migrator.run('down', migrationName);
+await migrator.run('down', migrationName)
 
 // List Migrations
 /*
@@ -44,11 +33,10 @@ Promise which resolves with
 ]
 
 */
-promise = migrator.list();
-
+const migrations = await migrator.list()
 
 // Prune extraneous migrations from file system
-promise = migrator.prune();
+await migrator.prune()
 
 // Synchronize DB with latest migrations from file system
 /*
@@ -57,6 +45,5 @@ on the file system but missing in the database into the database
 
 This functionality is opposite of prune()
 */
-promise = migrator.sync();
-
-
+await migrator.sync()
+```

@@ -1,14 +1,9 @@
-const { User } = require('../models')
+import { UserModel } from '../models/index.js'
 
-async function up () {
-  await User.create({ firstName: 'Ada' });
+export async function up() {
+  await UserModel.create({ firstName: 'Ada' })
 }
 
-async function down () {
-  await User.deleteOne({ firstName: 'Ada' });
-}
-
-module.exports = {
-  down,
-  up
+export async function down() {
+  await UserModel.deleteOne({ firstName: 'Ada' })
 }

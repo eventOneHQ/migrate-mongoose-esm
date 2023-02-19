@@ -1,38 +1,45 @@
 #! /usr/bin/env node
 
-require('colors');
-const dotenv = require('dotenv');
-const path = require('path');
-const yargs = require('yargs');
+import 'colors'
+import { config } from 'dotenv'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
-const Migrator = require('./lib');
+import { Migrator } from './lib.js'
 
-//get Env Variables from .env file
-dotenv.config();
+// get Env Variables from .env file
+config()
 
-let { argv: args } = yargs
-  .usage("Usage: migrate -d <mongo-uri> [[create|up|down <migration-name>]|list] [optional options]")
-  .demand(1)
-  .default('config', 'migrate')
+const { argv: args } = yargs(hideBin(process.argv))
+  .usage(
+    'Usage: migrate -d <mongo-uri> [[create|up|down <migration-name>]|list] [optional options]'
+  )
+  .default('config', 'migrate.json')
   .config(
     'config',
     'filepath to an options configuration json file',
-    pathToConfigFile => {
+    (pathToConfigFile) => {
       // Get any args from env vars
-      const envs = process.env;
-      const envVarOptions = {};
-      Object.keys(envs).map((key) => {
-        if (key.includes('MIGRATE_')) {
-          const [, option] = key.match(/MIGRATE_(.*$)/);
-          envVarOptions[option] = envs[key];
-        }
-      });
+      const envs = process.env
+      const envVarOptions = {}
 
-      let configOptions = {};
+      for (const key in envs) {
+        if (key.includes('MIGRATE_')) {
+          const [, option] = key.match(/MIGRATE_(.*$)/)
+          envVarOptions[option] = envs[key]
+        }
+      }
+
+      let configOptions = {}
       try {
-        configOptions = require(pathToConfigFile)
-      } catch (err) { /* noop */ }
-      return Object.assign({}, configOptions, envVarOptions);
+        configOptions = JSON.parse(readFileSync(pathToConfigFile))
+      } catch (err) {
+        /* noop */
+      }
+
+      return { ...configOptions, ...envVarOptions }
     }
   )
 
@@ -42,15 +49,23 @@ let { argv: args } = yargs
   .command('create <migration-name>'.cyan, 'Creates a new migration file.')
   .example('migrate create add_users')
 
-  .command('up [migration-name]'.cyan,
+  .command(
+    'up [migration-name]'.cyan,
     'Migrates all the migration files that have not yet been run in chronological order. ' +
-    'Not including [migration-name] will run UP on all migrations that are in a DOWN state.')
+      'Not including [migration-name] will run UP on all migrations that are in a DOWN state.'
+  )
   .example('migrate up add_user')
 
-  .command('down <migration-name>'.cyan, 'Rolls back migrations down to given name (if down function was provided)')
+  .command(
+    'down <migration-name>'.cyan,
+    'Rolls back migrations down to given name (if down function was provided)'
+  )
   .example('migrate down delete_names')
 
-  .command('prune'.cyan, 'Allows you to delete extraneous migrations by removing extraneous local migration files/database migrations.')
+  .command(
+    'prune'.cyan,
+    'Allows you to delete extraneous migrations by removing extraneous local migration files/database migrations.'
+  )
   .example('migrate prune')
   .option('collection', {
     type: 'string',
@@ -59,7 +74,7 @@ let { argv: args } = yargs
     nargs: 1
   })
   .option('d', {
-    demand: true,
+    demandOption: true,
     type: 'string',
     alias: 'dbConnectionUri',
     description: 'The URI of the database connection'.yellow,
@@ -90,92 +105,114 @@ let { argv: args } = yargs
 
   .option('autosync', {
     type: 'boolean',
-    description: 'Automatically add new migrations in the migrations folder to the database instead of asking interactively'
+    description:
+      'Automatically add new migrations in the migrations folder to the database instead of asking interactively'
   })
 
   .help('h')
-  .alias('h', 'help');
+  .alias('h', 'help')
 
 // Destructure the command and following argument
-const [command, migrationName = args['migration-name']] = args._;
+const [command, migrationName = args['migration-name']] = args._
 
-if (!command) process.exit(1);
+if (!command) process.exit(1)
 
 // Change directory before anything if the option was provided
-if (args.c) process.chdir(args.c);
+if (args.c) process.chdir(args.c)
 
 // Make sure we have a connection URI
 if (!args.dbConnectionUri) {
-  console.error('You need to provide the Mongo URI to persist migration status.\nUse option --dbConnectionUri / -d to provide the URI.'.red);
-  process.exit(1);
+  console.error(
+    'You need to provide the Mongo URI to persist migration status.\nUse option --dbConnectionUri / -d to provide the URI.'
+      .red
+  )
+  process.exit(1)
 }
 
-let migrator = new Migrator({
-  migrationsPath: path.resolve(args['migrations-dir']),
+const migrator = new Migrator({
+  migrationsPath: resolve(args['migrations-dir']),
   templatePath: args['template-file'],
   dbConnectionUri: args.dbConnectionUri,
   collectionName: args.collection,
   autosync: args.autosync,
   cli: true
-});
+})
 
 process.on('SIGINT', () => {
   migrator.close().then(() => {
-    process.exit(0);
-  });
-});
+    process.exit(0)
+  })
+})
 
 process.on('exit', () => {
   // NOTE: This is probably useless since close is async and 'exit' does not wait for the code to finish before
   // exiting ther process, so it's a race condition between exiting and closing.
-  migrator.close();
-});
+  migrator.close()
+})
 
-
-let promise;
+let promise
 switch (command) {
   case 'create':
-    validateSubArgs({ min: 1, max: 1, desc: 'You must provide only the name of the migration to create.'.red });
-    promise = migrator.create(migrationName);
+    validateSubArgs({
+      min: 1,
+      max: 1,
+      desc: 'You must provide only the name of the migration to create.'.red
+    })
+    promise = migrator.create(migrationName)
     promise.then(() => {
-      console.log(`Migration created. Run ` + `mongoose-migrate up ${migrationName}`.cyan + ` to apply the migration.`);
-    });
-    break;
+      console.log(
+        'Migration created. Run ' +
+          `mongoose-migrate up ${migrationName}`.cyan +
+          ' to apply the migration.'
+      )
+    })
+    break
   case 'up':
-    validateSubArgs({ max: 1, desc: 'Command "up" takes 0 or 1 arguments'.red });
-    promise = migrator.run('up', migrationName);
-    break;
+    validateSubArgs({ max: 1, desc: 'Command "up" takes 0 or 1 arguments'.red })
+    promise = migrator.run('up', migrationName)
+    break
   case 'down':
-    validateSubArgs({ min: 1, max: 1, desc: 'You must provide the name of the migration to stop at when migrating down.'.red });
-    promise = migrator.run('down', migrationName);
-    break;
+    validateSubArgs({
+      min: 1,
+      max: 1,
+      desc: 'You must provide the name of the migration to stop at when migrating down.'
+        .red
+    })
+    promise = migrator.run('down', migrationName)
+    break
   case 'list':
-    validateSubArgs({ max: 0, desc: 'Command "list" does not take any arguments'.yellow });
-    promise = migrator.list();
-    break;
+    validateSubArgs({
+      max: 0,
+      desc: 'Command "list" does not take any arguments'.yellow
+    })
+    promise = migrator.list()
+    break
   case 'prune':
-    validateSubArgs({ max: 0, desc: 'Command "prune" does not take any arguments'.yellow });
-    promise = migrator.prune();
-    break;
+    validateSubArgs({
+      max: 0,
+      desc: 'Command "prune" does not take any arguments'.yellow
+    })
+    promise = migrator.prune()
+    break
   default:
-    yargs.showHelp();
-    process.exit(0);
+    yargs.showHelp()
+    process.exit(0)
 }
 
 promise
-  .then(() => { process.exit(0); })
+  .then(() => {
+    process.exit(0)
+  })
   .catch((err) => {
-    console.warn(err.message.yellow);
-    process.exit(1);
-  });
-
-
+    console.warn(err.message.yellow)
+    process.exit(1)
+  })
 
 function validateSubArgs({ min = 0, max = Infinity, desc }) {
-  const argsLen = args._.length - 1;
+  const argsLen = args._.length - 1
   if (argsLen < min || argsLen > max) {
-    yargs.showHelp();
-    console.error(desc);
-    process.exit(-1);
+    yargs.showHelp()
+    console.error(desc)
+    process.exit(-1)
   }
 }

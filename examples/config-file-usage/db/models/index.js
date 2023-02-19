@@ -1,8 +1,6 @@
-const mongoose = require('mongoose');
-const User = require('./user.model');
+import { connect } from 'mongoose'
+import { UserModel } from './user.model.js'
 
-mongoose.connect('mongodb://localhost:27017/mydb', {useNewUrlParser: true})
+await connect('mongodb://localhost:27017/mydb')
 
-module.exports = {
-    User
-};
+export { UserModel }
