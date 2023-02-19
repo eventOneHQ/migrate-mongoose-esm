@@ -8,6 +8,7 @@
     "prepublish": "scripts/prepublish.sh",
     "release": "np --no-tests",
     "lint": "eslint .",
+    "docs": "jsdoc -c jsdoc.json",
     "test": "echo 'Error: no test specified'"
   },
   "bin": {
@@ -37,11 +38,13 @@
     "yargs": "^17.7.0"
   },
   "devDependencies": {
+    "clean-jsdoc-theme": "^4.2.6",
     "eslint": "^8.34.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
+    "jsdoc": "^4.0.1",
     "np": "^7.0.0"
   }
 }

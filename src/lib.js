@@ -24,7 +24,22 @@ export async function down () {
 }
 `
 
+/**
+ * Migrator class
+ */
 export class Migrator {
+  /**
+   * Create a migrator
+   *
+   * @param {Object} opts Options
+   * @param {string} [opts.templatePath] Path of the template file to use when creating a migration
+   * @param {string} [opts.migrationsPath=./migrations] The path to the migration files directory
+   * @param {string} opts.dbConnectionUri The URI of the database connection (optional if `connection` is specified)
+   * @param {string} [opts.collectionName=migrations] The collection to use for the migrations
+   * @param {boolean} [opts.autosync=false] Automatically add new migrations in the migrations folder to the database instead of asking interactively
+   * @param {boolean} [opts.cli=false] Adds logging
+   * @param {mongoose.Connection} [opts.connection] A mongoose connection to use
+   */
   constructor({
     templatePath,
     migrationsPath = './migrations',
@@ -46,6 +61,14 @@ export class Migrator {
     this.migrationModel = MigrationModelFactory(collectionName, this.connection)
   }
 
+  /**
+   * CLI logger
+   *
+   * @param {string} logString
+   * @param {boolean} force
+   *
+   * @private
+   */
   log(logString, force = false) {
     if (force || this.cli) {
       console.log(logString)
@@ -53,8 +76,8 @@ export class Migrator {
   }
 
   /**
-   * Use your own Mongoose connection object (so you can use this('modelname')
-   * @param {mongoose.connection} connection - Mongoose connection
+   * Use your own Mongoose connection object (so you can use `this('modelname')`)
+   * @param {mongoose.Connection} connection Mongoose connection
    */
   setMongooseConnection(connection) {
     this.migrationModel = MigrationModelFactory(this.collection, connection)
@@ -71,8 +94,8 @@ export class Migrator {
 
   /**
    * Create a new migration
-   * @param {string} migrationName
-   * @returns {Promise<Object>} A promise of the Migration created
+   * @param {string} migrationName Name of the migration
+   * @returns {Promise<Migration>} A promise of the Migration created
    */
   async create(migrationName) {
     try {
@@ -110,8 +133,17 @@ export class Migrator {
   /**
    * Runs migrations up to or down to a given migration name
    *
-   * @param migrationName
-   * @param direction
+   * @param migrationName Name of the migration
+   * @param direction Run direction
+   *
+   * @returns {Promise<Migration[]>} A promise of the Migrations run
+   *
+   * @example
+   * // Migrate Up
+   * await migrator.run('up', migrationName)
+   *
+   * // Migrate Down
+   * await migrator.run('down', migrationName)
    */
   async run(direction = 'up', migrationName, ...args) {
     await this.sync()
@@ -223,7 +255,7 @@ export class Migrator {
    * Looks at the file system migrations and imports any migrations that are
    * on the file system but missing in the database into the database
    *
-   * This functionality is opposite of prune()
+   * This functionality is opposite of `prune()`
    */
   async sync() {
     try {
@@ -290,7 +322,7 @@ export class Migrator {
   }
 
   /**
-   * Opposite of sync().
+   * Opposite of `sync()`.
    * Removes files in migration directory which don't exist in database.
    */
   async prune() {
@@ -355,12 +387,20 @@ export class Migrator {
 
   /**
    * Lists the current migrations and their statuses
-   * @returns {Promise<Array<Object>>}
+   * @returns {Promise<Array<Migration>>}
    * @example
-   *   [
-   *    { name: 'my-migration', filename: '149213223424_my-migration.js', state: 'up' },
-   *    { name: 'add-cows', filename: '149213223453_add-cows.js', state: 'down' }
-   *   ]
+   * [
+   *   {
+   *     name: 'my-migration',
+   *     filename: '149213223424_my-migration.js',
+   *     state: 'up'
+   *   },
+   *   {
+   *     name: 'add-cows',
+   *     filename: '149213223453_add-cows.js',
+   *     state: 'down'
+   *   }
+   * ]
    */
   async list() {
     await this.sync()

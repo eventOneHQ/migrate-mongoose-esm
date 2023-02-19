@@ -1,9 +1,28 @@
 import { Schema } from 'mongoose'
 
 /**
+ * Migration object
+ *
+ * @typedef Migration
+ *
+ * @prop {string} name - Name of the migration
+ * @prop {string} filename - Filename of the migration (`<created-date>-<name>`)
+ * @prop {string} state - State of the migration (`up` or `down`)
+ *
+ * @example
+ * {
+ *   name: 'my-migration',
+ *   filename: '149213223424_my-migration.js',
+ *   state: 'up'
+ * }
+ */
+
+/**
  * Factory function for a mongoose model
- * @param {string} collection
- * @param {*} dbConnection
+ * @param {string} [collection=migrations]
+ * @param {mongoose.Connection} dbConnection
+ *
+ * @private
  */
 export function MigrationModelFactory(collection = 'migrations', dbConnection) {
   const MigrationSchema = new Schema(
