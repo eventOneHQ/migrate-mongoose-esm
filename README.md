@@ -1,10 +1,10 @@
-# migrate-mongoose-esm
+# @eventonehq/migrate-mongoose
 
 A node based migration framework for ESM for mongoose
 
 #### Motivation
 
-migrate-mongoose-esm is a migration framework for projects which are already using mongoose.
+migrate-mongoose is a migration framework for projects which are already using mongoose.
 
 **Most other migration frameworks:**
 
@@ -12,7 +12,7 @@ migrate-mongoose-esm is a migration framework for projects which are already usi
 - Not configurable enough: There are not a granular enough controls to manage which migrations get run
 - Rely on a document-level migration: You have to change your application code to run a migration if it hasn't been run on a document you're working with
 
-**migrate-mongoose-esm:**
+**migrate-mongoose:**
 
 - Stores migration state in MongoDB
 - Provides plenty of features such as
@@ -27,7 +27,7 @@ migrate-mongoose-esm is a migration framework for projects which are already usi
 You can install it locally in your project
 
 ```
- npm install migrate-mongoose-esm
+ npm install @eventonehq/migrate-mongoose
 ```
 
 and then run
@@ -41,7 +41,7 @@ npx migrate [command] [options]
 Install it globally
 
 ```
- npm install -g migrate-mongoose-esm
+ npm install -g @eventonehq/migrate-mongoose
 ```
 
 and then run
@@ -100,7 +100,7 @@ If you want to not provide the options such as `--dbConnectionUri` to the progra
 export MIGRATE_dbConnectionUri=localhost/migrations
 ```
 
-`.env` files are also supported. All variables will be read from the `.env` file and set by migrate-mongoose-esm.
+`.env` files are also supported. All variables will be read from the `.env` file and set by migrate-mongoose.
 
 ```bash
 #.env
@@ -125,7 +125,7 @@ Just make sure you don't have aliases of the same option with 2 different values
 
 ### Migration Files
 
-By default, migrate-mongoose-esm assumes your migration folder exists.
+By default, migrate-mongoose assumes your migration folder exists.
 
 Here's an example of a migration created using `migrate create some-migration-name` . This example demonstrates how you can access your `mongoose` models and handle errors in your migrations
 
@@ -159,7 +159,7 @@ export async function up() {
 
 Just go about your business as usual, importing your models and making changes to your database.
 
-migrate-mongoose-esm makes an independent connection to MongoDB to fetch and write migration states and makes no assumptions about your database configurations or even prevent you from making changes to multiple or even non-mongo databases in your migrations. As long as you can import the references to your models you can use them in migrations.
+migrate-mongoose makes an independent connection to MongoDB to fetch and write migration states and makes no assumptions about your database configurations or even prevent you from making changes to multiple or even non-mongo databases in your migrations. As long as you can import the references to your models you can use them in migrations.
 
 Below is an example of a typical setup in a mongoose project
 

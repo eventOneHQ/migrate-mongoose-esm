@@ -1,7 +1,7 @@
 ### Example of using the library programmatically
 
 ```javascript
-import { Migrator } from 'migrate-mongoose-esm'
+import { Migrator } from '@eventonehq/migrate-mongoose'
 
 const migrator = new Migrator({
   migrationsPath: '/path/to/migrations/', // Path to migrations directory

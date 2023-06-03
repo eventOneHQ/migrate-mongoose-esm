@@ -1,6 +1,6 @@
 {
-  "name": "migrate-mongoose-esm",
-  "version": "4.0.0",
+  "name": "@eventonehq/migrate-mongoose",
+  "version": "5.0.0",
   "description": "A mongoose based migration framework for node",
   "main": "./src/lib.js",
   "type": "module",
@@ -27,7 +27,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/balmasi/migrate-mongoose.git"
+    "url": "https://github.com/eventOneHQ/migrate-mongoose-esm.git"
   },
   "dependencies": {
     "colors": "^1.1.2",
