@@ -14,7 +14,7 @@ config()
 
 const { argv: args } = yargs(hideBin(process.argv))
   .usage(
-    'Usage: migrate -d <mongo-uri> [[create|up|down <migration-name>]|list] [optional options]'
+    'Usage: migrate -d <mongo-uri> [[create|up|down <migration-name>]|list] [optional options]',
   )
   .default('config', 'migrate.json')
   .config(
@@ -35,12 +35,12 @@ const { argv: args } = yargs(hideBin(process.argv))
       let configOptions = {}
       try {
         configOptions = JSON.parse(readFileSync(pathToConfigFile))
-      } catch (err) {
+      } catch {
         /* noop */
       }
 
       return { ...configOptions, ...envVarOptions }
-    }
+    },
   )
 
   .command('list'.cyan, 'Lists all migrations and their current state.')
@@ -52,47 +52,47 @@ const { argv: args } = yargs(hideBin(process.argv))
   .command(
     'up [migration-name]'.cyan,
     'Migrates all the migration files that have not yet been run in chronological order. ' +
-      'Not including [migration-name] will run UP on all migrations that are in a DOWN state.'
+      'Not including [migration-name] will run UP on all migrations that are in a DOWN state.',
   )
   .example('migrate up add_user')
 
   .command(
     'down <migration-name>'.cyan,
-    'Rolls back migrations down to given name (if down function was provided)'
+    'Rolls back migrations down to given name (if down function was provided)',
   )
   .example('migrate down delete_names')
 
   .command(
     'prune'.cyan,
-    'Allows you to delete extraneous migrations by removing extraneous local migration files/database migrations.'
+    'Allows you to delete extraneous migrations by removing extraneous local migration files/database migrations.',
   )
   .example('migrate prune')
   .option('collection', {
     type: 'string',
     default: 'migrations',
     description: 'The collection to use for the migrations',
-    nargs: 1
+    nargs: 1,
   })
   .option('d', {
     demandOption: true,
     type: 'string',
     alias: 'dbConnectionUri',
     description: 'The URI of the database connection'.yellow,
-    nargs: 1
+    nargs: 1,
   })
   .option('md', {
     alias: 'migrations-dir',
     description: 'The path to the migration files',
     normalize: true,
     default: './migrations',
-    nargs: 1
+    nargs: 1,
   })
   .option('t', {
     alias: 'template-file',
     description: 'The template file to use when creating a migration',
     type: 'string',
     normalize: true,
-    nargs: 1
+    nargs: 1,
   })
 
   .option('c', {
@@ -100,13 +100,13 @@ const { argv: args } = yargs(hideBin(process.argv))
     type: 'string',
     normalize: 'true',
     description: 'Change current working directory before running anything',
-    nargs: 1
+    nargs: 1,
   })
 
   .option('autosync', {
     type: 'boolean',
     description:
-      'Automatically add new migrations in the migrations folder to the database instead of asking interactively'
+      'Automatically add new migrations in the migrations folder to the database instead of asking interactively',
   })
 
   .help('h')
@@ -124,7 +124,7 @@ if (args.c) process.chdir(args.c)
 if (!args.dbConnectionUri) {
   console.error(
     'You need to provide the Mongo URI to persist migration status.\nUse option --dbConnectionUri / -d to provide the URI.'
-      .red
+      .red,
   )
   process.exit(1)
 }
@@ -135,7 +135,7 @@ const migrator = new Migrator({
   dbConnectionUri: args.dbConnectionUri,
   collectionName: args.collection,
   autosync: args.autosync,
-  cli: true
+  cli: true,
 })
 
 process.on('SIGINT', () => {
@@ -156,14 +156,14 @@ switch (command) {
     validateSubArgs({
       min: 1,
       max: 1,
-      desc: 'You must provide only the name of the migration to create.'.red
+      desc: 'You must provide only the name of the migration to create.'.red,
     })
     promise = migrator.create(migrationName)
     promise.then(() => {
       console.log(
         'Migration created. Run ' +
           `mongoose-migrate up ${migrationName}`.cyan +
-          ' to apply the migration.'
+          ' to apply the migration.',
       )
     })
     break
@@ -176,21 +176,21 @@ switch (command) {
       min: 1,
       max: 1,
       desc: 'You must provide the name of the migration to stop at when migrating down.'
-        .red
+        .red,
     })
     promise = migrator.run('down', migrationName)
     break
   case 'list':
     validateSubArgs({
       max: 0,
-      desc: 'Command "list" does not take any arguments'.yellow
+      desc: 'Command "list" does not take any arguments'.yellow,
     })
     promise = migrator.list()
     break
   case 'prune':
     validateSubArgs({
       max: 0,
-      desc: 'Command "prune" does not take any arguments'.yellow
+      desc: 'Command "prune" does not take any arguments'.yellow,
     })
     promise = migrator.prune()
     break

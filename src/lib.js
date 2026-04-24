@@ -47,7 +47,7 @@ export class Migrator {
     collectionName = 'migrations',
     autosync = false,
     cli = false,
-    connection
+    connection,
   }) {
     const defaultTemplate = migrationTemplate
     this.template = templatePath
@@ -100,12 +100,13 @@ export class Migrator {
   async create(migrationName) {
     try {
       const existingMigration = await this.migrationModel.findOne({
-        name: migrationName
+        name: migrationName,
       })
 
       if (existingMigration) {
         throw new Error(
-          `There is already a migration with name '${migrationName}' in the database`.red
+          `There is already a migration with name '${migrationName}' in the database`
+            .red,
         )
       }
 
@@ -119,7 +120,7 @@ export class Migrator {
       await this.connection
       const migrationCreated = await this.migrationModel.create({
         name: migrationName,
-        createdAt: now
+        createdAt: now,
       })
 
       this.log(`Created migration ${migrationName} in ${this.migrationPath}.`)
@@ -150,33 +151,33 @@ export class Migrator {
 
     if (direction !== 'up' && direction !== 'down') {
       throw new Error(
-        `The '${direction}' is not supported, use the 'up' or 'down' direction`
+        `The '${direction}' is not supported, use the 'up' or 'down' direction`,
       )
     }
 
     const untilMigration = migrationName
       ? await this.migrationModel.findOne({ name: migrationName })
       : await this.migrationModel
-        .findOne()
-        .sort({ createdAt: direction === 'up' ? -1 : 1 })
+          .findOne()
+          .sort({ createdAt: direction === 'up' ? -1 : 1 })
 
     if (!untilMigration) {
       if (migrationName) {
         throw new ReferenceError(
-          'Could not find that migration in the database'
+          'Could not find that migration in the database',
         )
       } else throw new Error('There are no pending migrations.')
     }
 
     let query = {
       createdAt: { $lte: untilMigration.createdAt },
-      state: 'down'
+      state: 'down',
     }
 
     if (direction === 'down') {
       query = {
         createdAt: { $gte: untilMigration.createdAt },
-        state: 'up'
+        state: 'up',
       }
     }
 
@@ -203,7 +204,8 @@ export class Migrator {
 
       if (!migrationFunctions[direction]) {
         throw new Error(
-          `The "${direction}" export is not defined in ${migration.filename}.`.red
+          `The "${direction}" export is not defined in ${migration.filename}.`
+            .red,
         )
       }
 
@@ -215,7 +217,7 @@ export class Migrator {
               if (err) return reject(err)
               resolve()
             },
-            ...args
+            ...args,
           )
 
           if (callPromise && typeof callPromise.then === 'function') {
@@ -226,7 +228,7 @@ export class Migrator {
         this.log(
           `${direction.toUpperCase()}:   `[
             direction === 'up' ? 'green' : 'red'
-          ] + ` ${migration.filename} `
+          ] + ` ${migration.filename} `,
         )
 
         await this.migrationModel
@@ -236,10 +238,10 @@ export class Migrator {
         numMigrationsRan++
       } catch (err) {
         this.log(
-          `Failed to run migration ${migration.name} due to an error.`.red
+          `Failed to run migration ${migration.name} due to an error.`.red,
         )
         this.log(
-          'Not continuing. Make sure your data is in consistent state'.red
+          'Not continuing. Make sure your data is in consistent state'.red,
         )
         throw err instanceof Error ? err : new Error(err)
       }
@@ -268,7 +270,7 @@ export class Migrator {
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(
-            (m) => filename === m.filename
+            (m) => filename === m.filename,
           )
           return { createdAt: fileCreatedAt, filename, existsInDatabase }
         })
@@ -285,7 +287,7 @@ export class Migrator {
           message:
             'The following migrations exist in the migrations folder but not in the database. Select the ones you want to import into the database',
           name: 'migrationsToImport',
-          choices: filesNotInDb
+          choices: filesNotInDb,
         })
 
         migrationsToImport = answers.migrationsToImport
@@ -298,24 +300,24 @@ export class Migrator {
           const timestamp = migrationToImport.slice(0, timestampSeparatorIndex)
           const migrationName = migrationToImport.slice(
             timestampSeparatorIndex + 1,
-            migrationToImport.lastIndexOf('.')
+            migrationToImport.lastIndexOf('.'),
           )
 
           this.log(
             `Adding migration ${filePath} into database from file system. State is ` +
-              'DOWN'.red
+              'DOWN'.red,
           )
           const createdMigration = await this.migrationModel.create({
             name: migrationName,
-            createdAt: timestamp
+            createdAt: timestamp,
           })
           return createdMigration.toJSON()
-        })
+        }),
       )
     } catch (error) {
       this.log(
         'Could not synchronise migrations in the migrations folder up to the database.'
-          .red
+          .red,
       )
       throw error
     }
@@ -336,7 +338,7 @@ export class Migrator {
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(
-            (m) => filename === m.filename
+            (m) => filename === m.filename,
           )
           return { createdAt: fileCreatedAt, filename, existsInDatabase }
         })
@@ -354,8 +356,8 @@ export class Migrator {
             message:
               'The following migrations exist in the database but not in the migrations folder. Select the ones you want to remove from the file system.',
             name: 'migrationsToDelete',
-            choices: migrationsToDelete
-          }
+            choices: migrationsToDelete,
+          },
         ])
 
         migrationsToDelete = answers.migrationsToDelete
@@ -363,7 +365,7 @@ export class Migrator {
 
       const migrationsToDeleteDocs = await this.migrationModel
         .find({
-          name: { $in: migrationsToDelete }
+          name: { $in: migrationsToDelete },
         })
         .lean()
 
@@ -371,10 +373,10 @@ export class Migrator {
         this.log(
           'Removing migration(s) ',
           `${migrationsToDelete.join(', ')}`.cyan,
-          ' from database'
+          ' from database',
         )
         await this.migrationModel.deleteMany({
-          name: { $in: migrationsToDelete }
+          name: { $in: migrationsToDelete },
         })
       }
 
@@ -410,7 +412,7 @@ export class Migrator {
       this.log(
         `${m.state === 'up' ? 'UP:  \t' : 'DOWN:\t'}`[
           m.state === 'up' ? 'green' : 'red'
-        ] + ` ${m.filename}`
+        ] + ` ${m.filename}`,
       )
       return m.toJSON()
     })

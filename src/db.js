@@ -32,21 +32,21 @@ export function MigrationModelFactory(collection = 'migrations', dbConnection) {
       state: {
         type: String,
         enum: ['down', 'up'],
-        default: 'down'
-      }
+        default: 'down',
+      },
     },
     {
       collection,
       toJSON: {
         virtuals: true,
-        transform: function (doc, ret, options) {
+        transform: function (doc, ret) {
           delete ret._id
           delete ret.id
           delete ret.__v
           return ret
-        }
-      }
-    }
+        },
+      },
+    },
   )
 
   MigrationSchema.virtual('filename').get(function () {
