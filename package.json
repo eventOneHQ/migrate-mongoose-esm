@@ -10,7 +10,9 @@
       "require": "./src/lib.js"
     }
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
     "prepublish": "scripts/prepublish.sh",
     "lint": "eslint .",
@@ -60,7 +62,9 @@
       "reporter": [
         "text",
         "html",
-        "lcov"
+        "lcov",
+        "json-summary",
+        "json"
       ]
     }
   },
