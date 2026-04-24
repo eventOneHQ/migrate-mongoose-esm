@@ -1,181 +1,213 @@
+<div align="center">
+
 # @eventonehq/migrate-mongoose
 
-An ESM Node.js (>=20.19.0) migration framework for mongoose (v7, v8, v9)
+**A migration framework for Mongoose**
 
-#### Motivation
+[![npm version](https://img.shields.io/npm/v/@eventonehq/migrate-mongoose?style=flat-square&color=crimson)](https://www.npmjs.com/package/@eventonehq/migrate-mongoose)
+[![npm downloads](https://img.shields.io/npm/dm/@eventonehq/migrate-mongoose?style=flat-square)](https://www.npmjs.com/package/@eventonehq/migrate-mongoose)
+[![Node.js](https://img.shields.io/node/v/@eventonehq/migrate-mongoose?style=flat-square)](https://nodejs.org)
+[![Mongoose](https://img.shields.io/badge/mongoose-v7%20%7C%20v8%20%7C%20v9-880000?style=flat-square)](https://mongoosejs.com)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-migrate-mongoose is a migration framework for projects which are already using mongoose.
+</div>
 
-**Most other migration frameworks:**
+---
 
-- Use a local state file to keep track of which migrations have been run: This is a problem for PaS providers like heroku where the file system is wiped each time you deploy
-- Not configurable enough: There are not a granular enough controls to manage which migrations get run
-- Rely on a document-level migration: You have to change your application code to run a migration if it hasn't been run on a document you're working with
+> Seamlessly manage database migrations in projects already using Mongoose. Migration state is stored directly in MongoDB — no fragile local state files, no lock-in.
 
-**migrate-mongoose:**
+---
 
-- Stores migration state in MongoDB
-- Provides plenty of features such as
-  - Access to mongoose models in migrations
-  - Use of promises or standard callbacks
-  - custom config files or env variables for migration options
-  - ability to delete unused migrations
-- Relies on a simple _GLOBAL_ state of whether or not each migration has been called
+## Why migrate-mongoose?
 
-### Getting Started with the CLI
+Most migration frameworks fall short in one or more ways:
 
-You can install it locally in your project along with mongoose (if not already installed)
+| Problem | migrate-mongoose |
+|---|---|
+| Local state files break on ephemeral filesystems (e.g. Heroku, containers) | Stores state in **MongoDB** |
+| No access to your app's models inside migrations | Full access to **Mongoose models** |
+| Inflexible configuration | Config via **CLI flags, env vars, or config file** |
+| Document-level migration requires app code changes | Simple **global migration state** — run once, done |
 
+**Key features:**
+
+- Stores migration state in MongoDB — works anywhere your DB does
+- Full access to Mongoose models inside migration files
+- Promise-based migrations (async/await)
+- Flexible config: CLI flags, `.env`, or `migrate.json`
+- Prune stale migrations that no longer exist on the filesystem
+- Programmatic API for use in your own scripts or test suites
+
+---
+
+## Table of Contents
+
+- [Installation](#installation)
+- [CLI Usage](#cli-usage)
+  - [Commands](#commands)
+  - [Options](#options)
+  - [Examples](#examples)
+- [Configuration](#configuration)
+  - [Environment Variables](#environment-variables)
+  - [Config File](#config-file)
+  - [Override Order](#override-order)
+- [Migration Files](#migration-files)
+- [Using Mongoose Models in Migrations](#using-mongoose-models-in-migrations)
+- [Programmatic Usage](#programmatic-usage)
+- [Notes](#notes)
+- [Peer Dependencies](#peer-dependencies)
+- [Contributing](#contributing)
+
+---
+
+## Installation
+
+Install locally in your project alongside Mongoose:
+
+```sh
+npm install @eventonehq/migrate-mongoose mongoose
 ```
- npm install @eventonehq/migrate-mongoose mongoose
-```
 
-and then run
+Then run commands with npx:
 
-```
+```sh
 npx migrate [command] [options]
 ```
 
-#### OR
+---
 
-Install it globally
+## CLI Usage
 
-```
- npm install -g @eventonehq/migrate-mongoose mongoose
-```
-
-and then run
-
-```
-migrate [command] [options]
+```sh
+npx migrate -d <mongo-uri> [command] [migration-name] [options]
 ```
 
-### Usage
+### Commands
 
-```
-Usage: migrate -d <mongo-uri> [[create|up|down<migration-name>]|list|prune] [optional options]
+| Command | Description |
+|---|---|
+| `list` | Lists all migrations and their current state |
+| `create <name>` | Creates a new migration file |
+| `up [name]` | Runs all pending migrations. If `[name]` is given, runs up to that migration only |
+| `down <name>` | Rolls back all migrations down to the specified migration |
+| `prune` | Removes DB entries for migrations that no longer exist on the filesystem |
 
-Commands:
-  list                     Lists all migrations and their current state.
-  create <migration-name>  Creates a new migration file.
-  up [migration-name]      Migrates all the migration files that have not yet
-                           been run in chronological order. Not including
-                           [migration-name] will run UP on all migrations that
-                           are in a DOWN state.
-  down <migration-name>    Rolls back all migrations down to given name (if down
-                           function was provided)
-  prune                    Allows you to delete extraneous migrations by
-                           removing extraneous local migration files/database
-                           migrations.
+### Options
 
+| Flag | Description | Default |
+|---|---|---|
+| `-d, --dbConnectionUri` | MongoDB connection URI | *(required)* |
+| `--collection` | Collection name for storing migration state | `"migrations"` |
+| `--md, --migrations-dir` | Path to migration files | `"./migrations"` |
+| `-t, --template-file` | Custom template file for new migrations | — |
+| `-c, --change-dir` | Change working directory before running | — |
+| `--autosync` | Auto-add filesystem migrations to DB without prompting | `false` |
+| `-h, --help` | Show help | — |
 
-Options:
-  -d, --dbConnectionUri   The URI of the database connection                           [string] [required]
-  --collection            The mongo collection name to use for migrations [string] [default: "migrations"]
-  --md, --migrations-dir  The path to the migration files               [string] [default: "./migrations"]
-  -t, --template-file     The template file to use when creating a migration                      [string]
-  -c, --change-dir        Change current working directory before running  anything               [string]
-  --autosync              Automatically add any migrations on filesystem but not in db to db     [boolean]
-                          rather than asking interactively (use in scripts)
-  -h, --help              Show help                                                              [boolean]
+### Examples
 
-
-
-Examples:
-  migrate list -d mongodb://localhost/migrations
-  migrate create add_users -d mongodb://localhost/migrations
-  migrate up add_user -d mongodb://localhost/migrations
-  migrate down delete_names -d mongodb://localhost/migrations
-  migrate prune -d mongodb://localhost/migrations
-  migrate list --config settings.json
+```sh
+npx migrate list -d mongodb://localhost/mydb
+npx migrate create add_users -d mongodb://localhost/mydb
+npx migrate up add_users -d mongodb://localhost/mydb
+npx migrate down add_users -d mongodb://localhost/mydb
+npx migrate prune -d mongodb://localhost/mydb
+npx migrate list --config migrate.json
 ```
 
-### Setting Options Automatically
+---
 
-If you want to not provide the options such as `--dbConnectionUri` to the program every time you have 2 options.
+## Configuration
 
-#### 1. Set the option as an Environment Variable with the prefix `MIGRATE_`
+Avoid repeating `--dbConnectionUri` (and other flags) on every command using one of the approaches below.
 
+### Environment Variables
+
+Prefix any option name with `MIGRATE_`:
+
+```sh
+export MIGRATE_dbConnectionUri=mongodb://localhost:27017/mydb
 ```
-export MIGRATE_dbConnectionUri=mongodb://localhost:27017/migrations
-```
 
-`.env` files are also supported. All variables will be read from the `.env` file and set by migrate-mongoose.
+`.env` files are supported — all variables are loaded automatically:
 
-```bash
-#.env
+```sh
+# .env
 MIGRATE_dbConnectionUri=mongodb://localhost:27017/mydb
 ```
 
-#### 2. Provide a config file (defaults to _migrate.json_)
+### Config File
 
-```bash
-# If you have migrate.json in the directory, you don't need to do anything
-migrate list
+By default, migrate-mongoose looks for a `migrate.json` in the current directory:
 
-# Otherwise you can provide a config file
-migrate list --config somePath/myCustomConfigFile.json
-```
-
-#### Options Override Order:
-
-Command line args _beat_ Env vars _beats_ Config File
-
-Just make sure you don't have aliases of the same option with 2 different values between env vars and config file
-
-### Migration Files
-
-By default, migrate-mongoose assumes your migration folder exists.
-
-Here's an example of a migration created using `migrate create some-migration-name` . This example demonstrates how you can access your `mongoose` models and handle errors in your migrations
-
-#### migrations/1562460744403-some-migration-name.js
-
-```javascript
-/**
- * Easy flow control
- */
-// Notice no need for callback
-export async function up() {
-  // Error handling is as easy as throwing an error
-  if (condition) {
-    throw new Error('This is an error. Could not complete migration')
-  }
-
-  // You can just run your updates and when function finishes the migration is assumed to be done!
-  await new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve('ok')
-    }, 3000)
-  })
-
-  // ========  OR ===========
-  // just return the promise! It will succeed when it resolves or fail when rejected
-  return lib.getPromise()
+```json
+{
+  "dbConnectionUri": "mongodb://localhost:27017/mydb",
+  "migrationsDir": "./migrations"
 }
 ```
 
-### Access to mongoose models in your migrations
+To use a custom path:
 
-Just go about your business as usual, importing your models and making changes to your database.
+```sh
+npx migrate list --config somePath/myCustomConfigFile.json
+```
 
-migrate-mongoose makes an independent connection to MongoDB to fetch and write migration states and makes no assumptions about your database configurations or even prevent you from making changes to multiple or even non-mongo databases in your migrations. As long as you can import the references to your models you can use them in migrations.
+### Override Order
 
-Below is an example of a typical setup in a mongoose project
+```
+CLI flags  >  Environment variables  >  Config file
+```
 
-#### models/user.model.js
+---
+
+## Migration Files
+
+Create a new migration file with:
+
+```sh
+npx migrate create some-migration-name
+```
+
+Each file exports `up` and optionally `down` functions:
+
+**`migrations/1562460744403-some-migration-name.js`**
+
+```javascript
+export async function up() {
+  // Throw an error to signal failure and halt the migration
+  if (condition) {
+    throw new Error('Migration failed: could not complete')
+  }
+
+  await someAsyncOperation()
+}
+
+export async function down() {
+  // Optional: implement rollback logic here
+}
+```
+
+---
+
+## Using Mongoose Models in Migrations
+
+Import your models directly — migrate-mongoose opens its own independent MongoDB connection for tracking state and makes no assumptions about your app's connection setup.
+
+**`models/user.model.js`**
 
 ```javascript
 import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
   firstName: String,
-  lastName: String
+  lastName: String,
 })
+
 export const UserModel = model('user', UserSchema)
 ```
 
-#### models/index.js
+**`models/index.js`**
 
 ```javascript
 import { connect } from 'mongoose'
@@ -186,93 +218,93 @@ connect('mongodb://localhost:27017/mydb')
 export { UserModel }
 ```
 
-#### migrations/1459287720919-my-migration.js
+**`migrations/1459287720919-my-migration.js`**
 
 ```javascript
 import { UserModel } from '../models/index.js'
 
 export async function up() {
-  // Then you can use it in the migration like so
   await UserModel.create({ firstName: 'Ada', lastName: 'Lovelace' })
 
-  // OR do something such as
   const users = await UserModel.find()
-  /* Do something with users */
+  // do something with users...
 }
 ```
 
-If you're using the package programmatically. You can access your models using the connection you constructed the Migrator with through the `this` context.
+When using the **programmatic API**, access models via the connection passed to `Migrator` using `this`:
 
 ```javascript
 export async function up() {
-  // "this('user')"  is the same as calling "connection.model('user')" using the connection you passed to the Migrator constructor.
-  //
+  // Equivalent to: connection.model('user')
   await this('user').create({ firstName: 'Ada', lastName: 'Lovelace' })
 }
 ```
 
-### Programmatic Usage
+---
+
+## Programmatic Usage
 
 ```javascript
 import { Migrator } from '@eventonehq/migrate-mongoose'
 
 const migrator = new Migrator({
-  migrationsPath: './migrations',   // path to migrations directory (default: './migrations')
-  templatePath: './template.js',    // custom template file (optional)
-  dbConnectionUri: 'mongodb://localhost:27017/mydb', // mongo URI (optional if `connection` is provided)
-  connection: mongooseConnection,   // existing mongoose connection (optional if `dbConnectionUri` is provided)
-  collectionName: 'migrations',     // collection to store migration state (default: 'migrations')
-  autosync: false,                  // auto-import filesystem migrations into DB without prompting (default: false)
-  cli: false,                       // enable console logging (default: false)
+  migrationsPath: './migrations',               // default: './migrations'
+  templatePath: './template.js',                // optional
+  dbConnectionUri: 'mongodb://localhost:27017/mydb', // required if no connection
+  connection: mongooseConnection,               // required if no dbConnectionUri
+  collectionName: 'migrations',                 // default: 'migrations'
+  autosync: false,                              // default: false
+  cli: false,                                   // enable console output (default: false)
 })
 
-// Create a new migration file
-await migrator.create('my-migration-name')
+await migrator.create('my-migration-name')        // Create a new migration file
+await migrator.run('up')                          // Run all pending migrations
+await migrator.run('up', 'my-migration-name')     // Run up to a specific migration
+await migrator.run('down', 'my-migration-name')   // Roll back to a specific migration
 
-// Run all pending migrations up
-await migrator.run('up')
+const migrations = await migrator.list()          // [{ name, filename, state }, ...]
+await migrator.sync()                             // Sync filesystem migrations into DB
+await migrator.prune()                            // Remove DB entries with no matching file
 
-// Run migrations up to a specific migration
-await migrator.run('up', 'my-migration-name')
-
-// Roll back migrations down to a specific migration
-await migrator.run('down', 'my-migration-name')
-
-// List all migrations and their state
-const migrations = await migrator.list()
-// Returns: [{ name, filename, state }, ...]
-
-// Sync DB with migrations on the filesystem (opposite of prune)
-await migrator.sync()
-
-// Remove DB entries for migrations that no longer exist on the filesystem
-await migrator.prune()
-
-// Use a different mongoose connection (allows using `this('ModelName')` in migrations)
-migrator.setMongooseConnection(anotherConnection)
-
-// Close the underlying MongoDB connection
-await migrator.close()
+migrator.setMongooseConnection(anotherConnection) // Swap the Mongoose connection
+await migrator.close()                            // Close the underlying DB connection
 ```
 
-### Notes
+---
 
-Currently, the **-d**/**dbConnectionUri** must include the database to use for migrations in the uri.
+## Notes
 
-example: `-d mongodb://localhost:27017/development` .
+The `--dbConnectionUri` / `-d` value **must include the database name**:
 
-If you don't want to pass it in every time feel free to use the `migrate.json` config file or an environment variable
+```sh
+npx migrate list -d mongodb://localhost:27017/mydb
+#                                              ^^^^
+```
 
-### Peer Dependencies
+---
 
-`mongoose` is a peer dependency. You must install it separately in your project. Supported versions: **mongoose >= 7 < 10** (v7, v8, v9).
+## Peer Dependencies
 
-### Examples
+`mongoose` must be installed separately. Supported versions: **v7, v8, v9** (`>= 7 < 10`).
 
-Feel Free to check out the examples in the project to get a better idea of usage
+```sh
+npm install mongoose
+```
 
-### How to contribute
+---
 
-1. Start an issue. We will discuss the best approach
-2. Make a pull request. I'll review it and comment until we are both confident about it
-3. I'll merge your PR and bump the version of the package
+## Examples
+
+See the [`examples/`](./examples) directory for runnable examples covering:
+
+- [`command-line/`](./examples/command-line) — CLI usage walkthrough
+- [`config-file-usage/`](./examples/config-file-usage) — Using a `migrate.json` config file
+- [`programmatic-usage/`](./examples/programmatic-usage) — Using the JavaScript API directly
+
+---
+
+## Contributing
+
+1. Open an issue to discuss the proposed change
+2. Submit a pull request — it will be reviewed and iterated on together
+3. Once approved, it will be merged and the package version bumped
