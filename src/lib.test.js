@@ -8,9 +8,9 @@ import {
   it,
   vi,
 } from 'vitest'
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
-import { join, resolve } from 'path'
-import { tmpdir } from 'os'
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 

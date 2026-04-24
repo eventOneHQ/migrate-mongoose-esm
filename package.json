@@ -4,6 +4,13 @@
   "description": "A mongoose based migration framework for node",
   "main": "./src/lib.js",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/lib.js",
+      "require": "./src/lib.js"
+    }
+  },
+  "files": ["src"],
   "scripts": {
     "prepublish": "scripts/prepublish.sh",
     "lint": "eslint .",

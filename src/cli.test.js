@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { execFile } from 'child_process'
-import { mkdirSync, readdirSync, writeFileSync } from 'fs'
-import { dirname, join, resolve } from 'path'
-import { tmpdir } from 'os'
-import { fileURLToPath } from 'url'
-import { promisify } from 'util'
+import { execFile } from 'node:child_process'
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { fileURLToPath } from 'node:url'
+import { promisify } from 'node:util'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 const execFileAsync = promisify(execFile)

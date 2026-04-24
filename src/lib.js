@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, readdirSync } from 'fs'
-import { resolve, join } from 'path'
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { resolve, join } from 'node:path'
 
 import 'colors'
 import _ from 'lodash'

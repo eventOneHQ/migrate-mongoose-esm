@@ -1,6 +1,6 @@
 # @eventonehq/migrate-mongoose
 
-A ESM Node based migration framework for mongoose
+An ESM Node.js (>=20.19.0) migration framework for mongoose
 
 #### Motivation
 
@@ -97,7 +97,7 @@ If you want to not provide the options such as `--dbConnectionUri` to the progra
 #### 1. Set the option as an Environment Variable with the prefix `MIGRATE_`
 
 ```
-export MIGRATE_dbConnectionUri=localhost/migrations
+export MIGRATE_dbConnectionUri=mongodb://localhost:27017/migrations
 ```
 
 `.env` files are also supported. All variables will be read from the `.env` file and set by migrate-mongoose.
@@ -166,7 +166,7 @@ Below is an example of a typical setup in a mongoose project
 #### models/user.model.js
 
 ```javascript
-import { Schema, model } = from 'mongoose'
+import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
   firstName: String,
@@ -178,7 +178,7 @@ export const UserModel = model('user', UserSchema)
 #### models/index.js
 
 ```javascript
-import { connect } = from 'mongoose'
+import { connect } from 'mongoose'
 import { UserModel } from './user.model.js'
 
 connect('mongodb://localhost:27017/mydb')
@@ -209,6 +209,50 @@ export async function up() {
   //
   await this('user').create({ firstName: 'Ada', lastName: 'Lovelace' })
 }
+```
+
+### Programmatic Usage
+
+```javascript
+import { Migrator } from '@eventonehq/migrate-mongoose'
+
+const migrator = new Migrator({
+  migrationsPath: './migrations',   // path to migrations directory (default: './migrations')
+  templatePath: './template.js',    // custom template file (optional)
+  dbConnectionUri: 'mongodb://localhost:27017/mydb', // mongo URI (optional if `connection` is provided)
+  connection: mongooseConnection,   // existing mongoose connection (optional if `dbConnectionUri` is provided)
+  collectionName: 'migrations',     // collection to store migration state (default: 'migrations')
+  autosync: false,                  // auto-import filesystem migrations into DB without prompting (default: false)
+  cli: false,                       // enable console logging (default: false)
+})
+
+// Create a new migration file
+await migrator.create('my-migration-name')
+
+// Run all pending migrations up
+await migrator.run('up')
+
+// Run migrations up to a specific migration
+await migrator.run('up', 'my-migration-name')
+
+// Roll back migrations down to a specific migration
+await migrator.run('down', 'my-migration-name')
+
+// List all migrations and their state
+const migrations = await migrator.list()
+// Returns: [{ name, filename, state }, ...]
+
+// Sync DB with migrations on the filesystem (opposite of prune)
+await migrator.sync()
+
+// Remove DB entries for migrations that no longer exist on the filesystem
+await migrator.prune()
+
+// Use a different mongoose connection (allows using `this('ModelName')` in migrations)
+migrator.setMongooseConnection(anotherConnection)
+
+// Close the underlying MongoDB connection
+await migrator.close()
 ```
 
 ### Notes

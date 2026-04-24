@@ -2,8 +2,8 @@
 
 import 'colors'
 import { config } from 'dotenv'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
