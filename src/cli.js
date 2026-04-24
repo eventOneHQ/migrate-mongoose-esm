@@ -1,7 +1,5 @@
 #! /usr/bin/env node
 
-import 'colors'
-import { config } from 'dotenv'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import yargs from 'yargs'
@@ -10,7 +8,11 @@ import { hideBin } from 'yargs/helpers'
 import { Migrator } from './lib.js'
 
 // get Env Variables from .env file
-config({ quiet: true })
+try {
+  process.loadEnvFile()
+} catch {
+  /* noop */
+}
 
 const yargsInstance = yargs(hideBin(process.argv))
 

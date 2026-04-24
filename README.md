@@ -102,6 +102,7 @@ npx migrate -d <mongo-uri> [command] [migration-name] [options]
 | `-t, --template-file` | Custom template file for new migrations | — |
 | `-c, --change-dir` | Change working directory before running | — |
 | `--autosync` | Auto-add filesystem migrations to DB without prompting | `false` |
+| `--config` | Path to a JSON config file | `"migrate.json"` |
 | `-h, --help` | Show help | — |
 
 ### Examples
@@ -254,7 +255,7 @@ const migrator = new Migrator({
   connection: mongooseConnection,               // required if no dbConnectionUri
   collectionName: 'migrations',                 // default: 'migrations'
   autosync: false,                              // default: false
-  cli: false,                                   // enable console output (default: false)
+  cli: false,                                   // set to true to enable console output (default: false)
 })
 
 await migrator.create('my-migration-name')        // Create a new migration file

@@ -1,11 +1,18 @@
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
-import 'colors'
-import _ from 'lodash'
 import ask from 'inquirer'
-import { mkdirp } from 'mkdirp'
 import mongoose from 'mongoose'
+
+// Inline ANSI color helpers
+const ansiColors = { red: 31, yellow: 33, cyan: 36, green: 32 }
+for (const [color, code] of Object.entries(ansiColors)) {
+  Object.defineProperty(String.prototype, color, {
+    get() {
+      return `\x1b[${code}m${this}\x1b[39m`
+    },
+  })
+}
 
 import { MigrationModelFactory } from './db.js'
 
@@ -113,7 +120,7 @@ export class Migrator {
       await this.sync()
       const now = Date.now()
       const newMigrationFile = `${now}-${migrationName}.js`
-      mkdirp.sync(this.migrationPath)
+      mkdirSync(this.migrationPath, { recursive: true })
       writeFileSync(join(this.migrationPath, newMigrationFile), this.template)
 
       // create instance in db
@@ -344,7 +351,7 @@ export class Migrator {
         })
 
       const dbMigrationsNotOnFs = migrationsInDatabase.filter((m) => {
-        return !_.find(migrationsInFolder, { filename: m.filename })
+        return !migrationsInFolder.find((f) => f.filename === m.filename)
       })
 
       let migrationsToDelete = dbMigrationsNotOnFs.map((m) => m.name)
