@@ -10,9 +10,11 @@ import { hideBin } from 'yargs/helpers'
 import { Migrator } from './lib.js'
 
 // get Env Variables from .env file
-config()
+config({ quiet: true })
 
-const { argv: args } = yargs(hideBin(process.argv))
+const yargsInstance = yargs(hideBin(process.argv))
+
+const { argv: args } = yargsInstance
   .usage(
     'Usage: migrate -d <mongo-uri> [[create|up|down <migration-name>]|list] [optional options]',
   )
@@ -195,7 +197,7 @@ switch (command) {
     promise = migrator.prune()
     break
   default:
-    yargs.showHelp()
+    yargsInstance.showHelp()
     process.exit(0)
 }
 
@@ -209,9 +211,13 @@ promise
   })
 
 function validateSubArgs({ min = 0, max = Infinity, desc }) {
-  const argsLen = args._.length - 1
+  // Yargs may extract named positionals (e.g. args['migration-name']) out of
+  // args._ when the command string contains '<name>' or '[name]' patterns.
+  // Account for those so the count reflects what the user actually passed.
+  const extractedPositionals = args['migration-name'] !== undefined ? 1 : 0
+  const argsLen = args._.length - 1 + extractedPositionals
   if (argsLen < min || argsLen > max) {
-    yargs.showHelp()
+    yargsInstance.showHelp()
     console.error(desc)
     process.exit(-1)
   }

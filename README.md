@@ -1,6 +1,6 @@
 # @eventonehq/migrate-mongoose
 
-A node based migration framework for ESM for mongoose
+A ESM Node based migration framework for mongoose
 
 #### Motivation
 
