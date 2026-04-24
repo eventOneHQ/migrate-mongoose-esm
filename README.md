@@ -22,12 +22,12 @@
 
 Most migration frameworks fall short in one or more ways:
 
-| Problem | migrate-mongoose |
-|---|---|
-| Local state files break on ephemeral filesystems (e.g. Heroku, containers) | Stores state in **MongoDB** |
-| No access to your app's models inside migrations | Full access to **Mongoose models** |
-| Inflexible configuration | Config via **CLI flags, env vars, or config file** |
-| Document-level migration requires app code changes | Simple **global migration state** — run once, done |
+| Problem                                                                    | migrate-mongoose                                   |
+| -------------------------------------------------------------------------- | -------------------------------------------------- |
+| Local state files break on ephemeral filesystems (e.g. Heroku, containers) | Stores state in **MongoDB**                        |
+| No access to your app's models inside migrations                           | Full access to **Mongoose models**                 |
+| Inflexible configuration                                                   | Config via **CLI flags, env vars, or config file** |
+| Document-level migration requires app code changes                         | Simple **global migration state** — run once, done |
 
 **Key features:**
 
@@ -84,26 +84,25 @@ npx migrate -d <mongo-uri> [command] [migration-name] [options]
 
 ### Commands
 
-| Command | Description |
-|---|---|
-| `list` | Lists all migrations and their current state |
-| `create <name>` | Creates a new migration file |
-| `up [name]` | Runs all pending migrations. If `[name]` is given, runs up to that migration only |
-| `down <name>` | Rolls back all migrations down to the specified migration |
-| `prune` | Removes DB entries for migrations that no longer exist on the filesystem |
+| Command         | Description                                                                       |
+| --------------- | --------------------------------------------------------------------------------- |
+| `list`          | Lists all migrations and their current state                                      |
+| `create <name>` | Creates a new migration file                                                      |
+| `up [name]`     | Runs all pending migrations. If `[name]` is given, runs up to that migration only |
+| `down <name>`   | Rolls back all migrations down to the specified migration                         |
+| `prune`         | Removes DB entries for migrations that no longer exist on the filesystem          |
 
 ### Options
 
-| Flag | Description | Default |
-|---|---|---|
-| `-d, --dbConnectionUri` | MongoDB connection URI | *(required)* |
-| `--collection` | Collection name for storing migration state | `"migrations"` |
-| `--md, --migrations-dir` | Path to migration files | `"./migrations"` |
-| `-t, --template-file` | Custom template file for new migrations | — |
-| `-c, --change-dir` | Change working directory before running | — |
-| `--autosync` | Auto-add filesystem migrations to DB without prompting | `false` |
-| `--config` | Path to a JSON config file | `"migrate.json"` |
-| `-h, --help` | Show help | — |
+| Flag                     | Description                                 | Default          |
+| ------------------------ | ------------------------------------------- | ---------------- |
+| `-d, --dbConnectionUri`  | MongoDB connection URI                      | _(required)_     |
+| `--collection`           | Collection name for storing migration state | `"migrations"`   |
+| `--md, --migrations-dir` | Path to migration files                     | `"./migrations"` |
+| `-t, --template-file`    | Custom template file for new migrations     | —                |
+| `-c, --change-dir`       | Change working directory before running     | —                |
+| `--config`               | Path to a JSON config file                  | `"migrate.json"` |
+| `-h, --help`             | Show help                                   | —                |
 
 ### Examples
 
@@ -249,26 +248,25 @@ export async function up() {
 import { Migrator } from '@eventonehq/migrate-mongoose'
 
 const migrator = new Migrator({
-  migrationsPath: './migrations',               // default: './migrations'
-  templatePath: './template.js',                // optional
+  migrationsPath: './migrations', // default: './migrations'
+  templatePath: './template.js', // optional
   dbConnectionUri: 'mongodb://localhost:27017/mydb', // required if no connection
-  connection: mongooseConnection,               // required if no dbConnectionUri
-  collectionName: 'migrations',                 // default: 'migrations'
-  autosync: false,                              // default: false
-  cli: false,                                   // set to true to enable console output (default: false)
+  connection: mongooseConnection, // required if no dbConnectionUri
+  collectionName: 'migrations', // default: 'migrations'
+  cli: false, // set to true to enable console output (default: false)
 })
 
-await migrator.create('my-migration-name')        // Create a new migration file
-await migrator.run('up')                          // Run all pending migrations
-await migrator.run('up', 'my-migration-name')     // Run up to a specific migration
-await migrator.run('down', 'my-migration-name')   // Roll back to a specific migration
+await migrator.create('my-migration-name') // Create a new migration file
+await migrator.run('up') // Run all pending migrations
+await migrator.run('up', 'my-migration-name') // Run up to a specific migration
+await migrator.run('down', 'my-migration-name') // Roll back to a specific migration
 
-const migrations = await migrator.list()          // [{ name, filename, state }, ...]
-await migrator.sync()                             // Sync filesystem migrations into DB
-await migrator.prune()                            // Remove DB entries with no matching file
+const migrations = await migrator.list() // [{ name, filename, state }, ...]
+await migrator.sync() // Sync filesystem migrations into DB
+await migrator.prune() // Remove DB entries with no matching file
 
 migrator.setMongooseConnection(anotherConnection) // Swap the Mongoose connection
-await migrator.close()                            // Close the underlying DB connection
+await migrator.close() // Close the underlying DB connection
 ```
 
 ---

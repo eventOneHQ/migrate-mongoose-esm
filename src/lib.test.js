@@ -61,7 +61,7 @@ export async function down() {}
 }
 
 /**
- * Build a Migrator with autosync=true and a fresh migrations dir.
+ * Build a Migrator with a fresh migrations dir.
  * Returns { migrator, migrationsPath, connection }.
  */
 async function makeAutoMigrator(overrides = {}) {
@@ -72,7 +72,6 @@ async function makeAutoMigrator(overrides = {}) {
   const migrator = new Migrator({
     migrationsPath,
     connection,
-    autosync: true,
     ...overrides,
   })
 
@@ -172,7 +171,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
     })
     expect(migrator.connection).toBe(connection)
   })
@@ -183,7 +181,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
     })
     expect(migrator.migrationPath).toBe(resolve(migrationsPath))
   })
@@ -194,7 +191,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
     })
     expect(migrator.collection).toBe('migrations')
   })
@@ -205,7 +201,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
       collectionName: 'my_migrations',
     })
     expect(migrator.collection).toBe('my_migrations')
@@ -217,7 +212,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
     })
     expect(migrator.template).toContain('export async function up')
     expect(migrator.template).toContain('export async function down')
@@ -231,7 +225,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection,
-      autosync: true,
       templatePath,
     })
     expect(migrator.template).toBe('// custom template')
@@ -242,7 +235,6 @@ describe('Migrator constructor', () => {
     const migrator = new Migrator({
       migrationsPath,
       dbConnectionUri: mongoUri,
-      autosync: true,
     })
     expect(migrator.connection).toBeDefined()
     connections.push(migrator.connection)
@@ -261,7 +253,6 @@ describe('Migrator.close()', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection: conn,
-      autosync: true,
     })
     await migrator.close()
     // readyState 0 = disconnected
@@ -275,7 +266,6 @@ describe('Migrator.close()', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection: conn,
-      autosync: true,
     })
     migrator.connection = null
     await expect(migrator.close()).resolves.toBeUndefined()
@@ -751,7 +741,6 @@ describe('Migrator log()', () => {
     const migrator = new Migrator({
       migrationsPath,
       connection: conn,
-      autosync: true,
       cli: true,
       collectionName: `log_cli_test_${Date.now()}`,
     })

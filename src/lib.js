@@ -1,7 +1,6 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
-import ask from 'inquirer'
 import mongoose from 'mongoose'
 
 // Inline ANSI color helpers
@@ -43,7 +42,7 @@ export class Migrator {
    * @param {string} [opts.migrationsPath=./migrations] The path to the migration files directory
    * @param {string} opts.dbConnectionUri The URI of the database connection (optional if `connection` is specified)
    * @param {string} [opts.collectionName=migrations] The collection to use for the migrations
-   * @param {boolean} [opts.autosync=false] Automatically add new migrations in the migrations folder to the database instead of asking interactively
+
    * @param {boolean} [opts.cli=false] Adds logging
    * @param {mongoose.Connection} [opts.connection] A mongoose connection to use
    */
@@ -52,7 +51,6 @@ export class Migrator {
     migrationsPath = './migrations',
     dbConnectionUri,
     collectionName = 'migrations',
-    autosync = false,
     cli = false,
     connection,
   }) {
@@ -63,7 +61,6 @@ export class Migrator {
     this.migrationPath = resolve(migrationsPath)
     this.connection = connection || mongoose.createConnection(dbConnectionUri)
     this.collection = collectionName
-    this.autosync = autosync
     this.cli = cli
     this.migrationModel = MigrationModelFactory(collectionName, this.connection)
   }
@@ -268,6 +265,7 @@ export class Migrator {
    */
   async sync() {
     try {
+      mkdirSync(this.migrationPath, { recursive: true })
       const filesInMigrationFolder = readdirSync(this.migrationPath)
       const migrationsInDatabase = await this.migrationModel.find({})
 
@@ -286,19 +284,8 @@ export class Migrator {
         .filter((file) => !file.existsInDatabase)
         .map((f) => f.filename)
 
-      let migrationsToImport = filesNotInDb
+      const migrationsToImport = filesNotInDb
       this.log('Synchronizing database with file system migrations...')
-      if (!this.autosync && migrationsToImport.length) {
-        const answers = await ask.prompt({
-          type: 'checkbox',
-          message:
-            'The following migrations exist in the migrations folder but not in the database. Select the ones you want to import into the database',
-          name: 'migrationsToImport',
-          choices: filesNotInDb,
-        })
-
-        migrationsToImport = answers.migrationsToImport
-      }
 
       return Promise.all(
         migrationsToImport.map(async (migrationToImport) => {
@@ -354,21 +341,7 @@ export class Migrator {
         return !migrationsInFolder.find((f) => f.filename === m.filename)
       })
 
-      let migrationsToDelete = dbMigrationsNotOnFs.map((m) => m.name)
-
-      if (!this.autosync && !!migrationsToDelete.length) {
-        const answers = await ask.prompt([
-          {
-            type: 'checkbox',
-            message:
-              'The following migrations exist in the database but not in the migrations folder. Select the ones you want to remove from the file system.',
-            name: 'migrationsToDelete',
-            choices: migrationsToDelete,
-          },
-        ])
-
-        migrationsToDelete = answers.migrationsToDelete
-      }
+      const migrationsToDelete = dbMigrationsNotOnFs.map((m) => m.name)
 
       const migrationsToDeleteDocs = await this.migrationModel
         .find({

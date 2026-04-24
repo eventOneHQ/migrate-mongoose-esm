@@ -87,7 +87,6 @@ function base(migrationsDir, collection) {
     mongoUri,
     '--migrations-dir',
     migrationsDir,
-    '--autosync',
     '--collection',
     collection,
   ]
@@ -111,7 +110,6 @@ describe('CLI – error cases', () => {
     const { exitCode } = await runCLI([
       '--migrations-dir',
       migrationsDir,
-      '--autosync',
       '--collection',
       uniqueCollection(),
       'list',
@@ -428,7 +426,6 @@ describe('CLI – configuration', () => {
         mongoUri,
         '--migrations-dir',
         'migs',
-        '--autosync',
         '--collection',
         col,
         '--change-dir',
@@ -447,7 +444,6 @@ describe('CLI – configuration', () => {
         mongoUri,
         '--migrations-dir',
         'nonexistent-migs',
-        '--autosync',
         '--collection',
         uniqueCollection(),
         '--change-dir',
@@ -470,7 +466,6 @@ describe('CLI – configuration', () => {
       JSON.stringify({
         dbConnectionUri: mongoUri,
         migrationsDir: migsDir,
-        autosync: true,
         collection: col,
       }),
     )
@@ -489,14 +484,7 @@ describe('CLI – configuration', () => {
 
     // Pass the URI via env var instead of -d flag
     const { exitCode } = await runCLI(
-      [
-        '--migrations-dir',
-        migrationsDir,
-        '--autosync',
-        '--collection',
-        col,
-        'list',
-      ],
+      ['--migrations-dir', migrationsDir, '--collection', col, 'list'],
       { env: { MIGRATE_dbConnectionUri: mongoUri } },
     )
     expect(exitCode).toBe(0)

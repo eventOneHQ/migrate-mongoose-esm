@@ -8,7 +8,6 @@ const migrator = new Migrator({
   templatePath: '', // The template to use when creating migrations needs up and down functions exposed
   dbConnectionUri: 'mongodb://localhost/db', // mongo url
   collectionName: 'myMigrations', // collection name to use for migrations (defaults to 'migrations')
-  autosync: true // if making a CLI app, set this to false to prompt the user, otherwise true
 })
 
 const migrationName = 'myNewMigration'

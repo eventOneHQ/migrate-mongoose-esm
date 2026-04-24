@@ -107,12 +107,6 @@ const { argv: args } = yargsInstance
     nargs: 1,
   })
 
-  .option('autosync', {
-    type: 'boolean',
-    description:
-      'Automatically add new migrations in the migrations folder to the database instead of asking interactively',
-  })
-
   .help('h')
   .alias('h', 'help')
 
@@ -138,7 +132,6 @@ const migrator = new Migrator({
   templatePath: args['template-file'],
   dbConnectionUri: args.dbConnectionUri,
   collectionName: args.collection,
-  autosync: args.autosync,
   cli: true,
 })
 

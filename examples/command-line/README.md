@@ -81,27 +81,14 @@ DOWN:  	  1463603842010-add_default_regional_settings.js
 
 Lets say you `git pull` the latest changes from your project and someone had made a new migration called `add_unicorns` which adds much requested unicorns to your app.
 
-Now, when you go run any migration command (e.g. `migrate list`), you are prompted with
+When you run any migration command (e.g. `migrate list`), `migrate-mongoose` will automatically detect the new file and import it into the database with a state of DOWN.
 
-```
-Synchronizing database with file system migrations...
-? The following migrations exist in the migrations folder but not in the database. Select the ones you want to import into the database (Press <space> to select)
-❯◯ 1463003339853-add_unicorns.js
-```
+Once imported, run `migrate up add_unicorns` to apply it.
 
-This is telling you that someone added a migration file that's your database doesn't have yet.
-If you select it by pressing **Space** then **Enter** on your keyboard, you can tell `migrate-mongoose` to import it into the database.
-
-Once imported, the default state is DOWN so you'll have to `migrate up add_unicorns` to be all up-to-date.
-
-**IF ON THE OTHER HAND** you don't want this migration, simply run
+If you no longer want a migration that exists in the database but not on the filesystem, run
 
 ```
 $ npx migrate prune
 ```
 
-and you'll be prompted to remove it from the **FILE SYSTEM**.
-
-###### But what happens if I want to sync automatically instead of doing this every time?
-
-just add the option `--autosync` and the migrate command will automaticalaly import new migrations in your migrations folder before running commands.
+and it will be removed from the database.
