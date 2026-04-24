@@ -1,6 +1,6 @@
 # @eventonehq/migrate-mongoose
 
-An ESM Node.js (>=20.19.0) migration framework for mongoose
+An ESM Node.js (>=20.19.0) migration framework for mongoose (v7, v8, v9)
 
 #### Motivation
 
@@ -24,10 +24,10 @@ migrate-mongoose is a migration framework for projects which are already using m
 
 ### Getting Started with the CLI
 
-You can install it locally in your project
+You can install it locally in your project along with mongoose (if not already installed)
 
 ```
- npm install @eventonehq/migrate-mongoose
+ npm install @eventonehq/migrate-mongoose mongoose
 ```
 
 and then run
@@ -41,7 +41,7 @@ npx migrate [command] [options]
 Install it globally
 
 ```
- npm install -g @eventonehq/migrate-mongoose
+ npm install -g @eventonehq/migrate-mongoose mongoose
 ```
 
 and then run
@@ -262,6 +262,10 @@ Currently, the **-d**/**dbConnectionUri** must include the database to use for m
 example: `-d mongodb://localhost:27017/development` .
 
 If you don't want to pass it in every time feel free to use the `migrate.json` config file or an environment variable
+
+### Peer Dependencies
+
+`mongoose` is a peer dependency. You must install it separately in your project. Supported versions: **mongoose >= 7 < 10** (v7, v8, v9).
 
 ### Examples
 
