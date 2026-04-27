@@ -437,7 +437,7 @@ describe('CLI – configuration', () => {
     expect(exitCode).toBe(0)
   })
 
-  it('--change-dir without a valid migrations dir exits non-zero', async () => {
+  it('--change-dir creates migrations dir if it does not exist', async () => {
     const { exitCode } = await runCLI(
       [
         '-d',
@@ -452,7 +452,7 @@ describe('CLI – configuration', () => {
       ],
       { cwd: tmpdir() },
     )
-    expect(exitCode).not.toBe(0)
+    expect(exitCode).toBe(0)
   })
 
   it('reads options from a migrate.json config file', async () => {

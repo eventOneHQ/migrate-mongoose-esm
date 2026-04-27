@@ -193,32 +193,21 @@ export class Migrator {
       } else throw new Error('There are no pending migrations.')
     }
 
-    let query = {
-      createdAt: { $lte: untilMigration.createdAt },
-      state: 'down',
-    }
+    const isUp = direction === 'up'
+    const query = isUp
+      ? { createdAt: { $lte: untilMigration.createdAt }, state: 'down' }
+      : { createdAt: { $gte: untilMigration.createdAt }, state: 'up' }
 
-    if (direction === 'down') {
-      query = {
-        createdAt: { $gte: untilMigration.createdAt },
-        state: 'up',
-      }
-    }
-
-    const sortDirection = direction === 'up' ? 1 : -1
     const migrationsToRun = await this.migrationModel
       .find(query)
-      .sort({ createdAt: sortDirection })
+      .sort({ createdAt: isUp ? 1 : -1 })
 
     if (!migrationsToRun.length) {
-      if (this.cli) {
-        this.log('There are no migrations to run'.yellow)
-        this.log("Current Migrations' Statuses: ")
-        await this.list()
-      }
+      this.log('There are no migrations to run'.yellow)
+      this.log("Current Migrations' Statuses: ")
+      if (this.cli) await this.list()
     }
 
-    let numMigrationsRan = 0
     const migrationsRan = []
 
     for (const migration of migrationsToRun) {
@@ -249,16 +238,14 @@ export class Migrator {
         })
 
         this.log(
-          `${direction.toUpperCase()}:   `[
-            direction === 'up' ? 'green' : 'red'
-          ] + ` ${migration.filename} `,
+          (isUp ? `UP:   ` : `DOWN: `)[isUp ? 'green' : 'red'] +
+            ` ${migration.filename} `,
         )
 
         await this.migrationModel
           .where({ name: migration.name })
           .updateMany({ $set: { state: direction } })
         migrationsRan.push(migration.toJSON())
-        numMigrationsRan++
       } catch (err) {
         this.log(
           `Failed to run migration ${migration.name} due to an error.`.red,
@@ -270,10 +257,34 @@ export class Migrator {
       }
     }
 
-    if (migrationsToRun.length === numMigrationsRan && numMigrationsRan > 0) {
+    if (
+      migrationsToRun.length > 0 &&
+      migrationsRan.length === migrationsToRun.length
+    ) {
       this.log('All migrations finished successfully.'.green)
     }
     return migrationsRan
+  }
+
+  /**
+   * Returns migration files on disk cross-referenced with the database.
+   * @returns {{ migrationsInFolder: Array<{createdAt: number, filename: string, existsInDatabase: boolean}>, migrationsInDatabase: Array }}
+   * @private
+   */
+  async _getMigrationFiles() {
+    mkdirSync(this.migrationPath, { recursive: true })
+    const filesInMigrationFolder = readdirSync(this.migrationPath)
+    const migrationsInDatabase = await this.migrationModel.find({})
+    const migrationsInFolder = filesInMigrationFolder
+      .filter((file) => /\d{13,}-.+\.(js|ts)$/.test(file))
+      .map((filename) => {
+        const createdAt = parseInt(filename.split('-')[0])
+        const existsInDatabase = migrationsInDatabase.some(
+          (m) => filename === m.filename,
+        )
+        return { createdAt, filename, existsInDatabase }
+      })
+    return { migrationsInFolder, migrationsInDatabase }
   }
 
   /**
@@ -284,34 +295,20 @@ export class Migrator {
    */
   async sync() {
     try {
-      const filesInMigrationFolder = readdirSync(this.migrationPath)
-      const migrationsInDatabase = await this.migrationModel.find({})
-
-      // Go over migrations in folder and delete any files not in DB
-      const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+\.(js|ts)$/.test(file))
-        .map((filename) => {
-          const fileCreatedAt = parseInt(filename.split('-')[0])
-          const existsInDatabase = migrationsInDatabase.some(
-            (m) => filename === m.filename,
-          )
-          return { createdAt: fileCreatedAt, filename, existsInDatabase }
-        })
-
+      const { migrationsInFolder } = await this._getMigrationFiles()
       const filesNotInDb = migrationsInFolder
         .filter((file) => !file.existsInDatabase)
         .map((f) => f.filename)
 
-      const migrationsToImport = filesNotInDb
       this.log('Synchronizing database with file system migrations...')
 
       return Promise.all(
-        migrationsToImport.map(async (migrationToImport) => {
+        filesNotInDb.map(async (migrationToImport) => {
           const filePath = join(this.migrationPath, migrationToImport)
-          const timestampSeparatorIndex = migrationToImport.indexOf('-')
-          const timestamp = migrationToImport.slice(0, timestampSeparatorIndex)
+          const separatorIndex = migrationToImport.indexOf('-')
+          const timestamp = migrationToImport.slice(0, separatorIndex)
           const migrationName = migrationToImport.slice(
-            timestampSeparatorIndex + 1,
+            separatorIndex + 1,
             migrationToImport.lastIndexOf('.'),
           )
 
@@ -341,44 +338,24 @@ export class Migrator {
    */
   async prune() {
     try {
-      const filesInMigrationFolder = readdirSync(this.migrationPath)
-      const migrationsInDatabase = await this.migrationModel.find({})
+      const { migrationsInFolder, migrationsInDatabase } =
+        await this._getMigrationFiles()
 
-      // Go over migrations in folder and delete any files not in DB
-      const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+\.(js|ts)$/.test(file))
-        .map((filename) => {
-          const fileCreatedAt = parseInt(filename.split('-')[0])
-          const existsInDatabase = migrationsInDatabase.some(
-            (m) => filename === m.filename,
-          )
-          return { createdAt: fileCreatedAt, filename, existsInDatabase }
-        })
+      const dbMigrationsNotOnFs = migrationsInDatabase.filter(
+        (m) => !migrationsInFolder.find((f) => f.filename === m.filename),
+      )
 
-      const dbMigrationsNotOnFs = migrationsInDatabase.filter((m) => {
-        return !migrationsInFolder.find((f) => f.filename === m.filename)
-      })
-
-      const migrationsToDelete = dbMigrationsNotOnFs.map((m) => m.name)
-
-      const migrationsToDeleteDocs = await this.migrationModel
-        .find({
-          name: { $in: migrationsToDelete },
-        })
-        .lean()
-
-      if (migrationsToDelete.length) {
+      if (dbMigrationsNotOnFs.length) {
+        const names = dbMigrationsNotOnFs.map((m) => m.name)
         this.log(
           'Removing migration(s) ' +
-            `${migrationsToDelete.join(', ')}`.cyan +
+            `${names.join(', ')}`.cyan +
             ' from database',
         )
-        await this.migrationModel.deleteMany({
-          name: { $in: migrationsToDelete },
-        })
+        await this.migrationModel.deleteMany({ name: { $in: names } })
       }
 
-      return migrationsToDeleteDocs
+      return dbMigrationsNotOnFs.map((m) => m.toJSON())
     } catch (error) {
       this.log('Could not prune extraneous migrations from database.'.red)
       throw error

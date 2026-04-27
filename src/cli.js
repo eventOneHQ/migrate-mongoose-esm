@@ -136,33 +136,34 @@ function handleResult(migrator, promise) {
 
 let commandRan = false
 
+function runCommand(fn) {
+  commandRan = true
+  const migrator = createMigrator()
+  handleResult(migrator, fn(migrator))
+}
+
 program
   .command('list')
   .description('Lists all migrations and their current state.')
   .allowExcessArguments(false)
-  .action(() => {
-    commandRan = true
-    const migrator = createMigrator()
-    handleResult(migrator, migrator.list())
-  })
+  .action(() => runCommand((m) => m.list()))
 
 program
   .command('create <migration-name>')
   .description('Creates a new migration file.')
   .allowExcessArguments(false)
-  .action((migrationName) => {
-    commandRan = true
-    const migrator = createMigrator()
-    const promise = migrator.create(migrationName).then((result) => {
-      console.log(
-        'Migration created. Run ' +
-          `migrate up ${migrationName}`.cyan +
-          ' to apply the migration.',
-      )
-      return result
-    })
-    handleResult(migrator, promise)
-  })
+  .action((migrationName) =>
+    runCommand((m) =>
+      m.create(migrationName).then((result) => {
+        console.log(
+          'Migration created. Run ' +
+            `migrate up ${migrationName}`.cyan +
+            ' to apply the migration.',
+        )
+        return result
+      }),
+    ),
+  )
 
 program
   .command('up [migration-name]')
@@ -171,11 +172,7 @@ program
       'Not including [migration-name] will run UP on all migrations that are in a DOWN state.',
   )
   .allowExcessArguments(false)
-  .action((migrationName) => {
-    commandRan = true
-    const migrator = createMigrator()
-    handleResult(migrator, migrator.run('up', migrationName))
-  })
+  .action((migrationName) => runCommand((m) => m.run('up', migrationName)))
 
 program
   .command('down <migration-name>')
@@ -183,11 +180,7 @@ program
     'Rolls back migrations down to given name (if down function was provided)',
   )
   .allowExcessArguments(false)
-  .action((migrationName) => {
-    commandRan = true
-    const migrator = createMigrator()
-    handleResult(migrator, migrator.run('down', migrationName))
-  })
+  .action((migrationName) => runCommand((m) => m.run('down', migrationName)))
 
 program
   .command('prune')
@@ -195,11 +188,7 @@ program
     'Allows you to delete extraneous migrations by removing extraneous local migration files/database migrations.',
   )
   .allowExcessArguments(false)
-  .action(() => {
-    commandRan = true
-    const migrator = createMigrator()
-    handleResult(migrator, migrator.prune())
-  })
+  .action(() => runCommand((m) => m.prune()))
 
 // Unknown command: show help and exit 0
 program.on('command:*', () => {
