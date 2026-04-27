@@ -34,7 +34,7 @@ npx migrate up -d mongodb://localhost:27017/mydb
 npx migrate list -d mongodb://localhost:27017/mydb
 ```
 
-For full documentation, visit the **[docs site](https://github.com/eventOneHQ/migrate-mongoose-esm)**.
+For full documentation, visit the **[docs site](https://eventonehq.github.io/migrate-mongoose-esm/)**.
 
 ---
 
