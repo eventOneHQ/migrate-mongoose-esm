@@ -24,6 +24,7 @@ All options can also be set via environment variables or a config file — see t
 | `--collection`           | Collection name for storing migration state | `"migrations"`   |
 | `--md, --migrations-dir` | Path to migration files                     | `"./migrations"` |
 | `-t, --template-file`    | Custom template file for new migrations     | —                |
+| `--typescript`           | Generate a TypeScript migration file (`.ts`) | `false`          |
 | `-c, --change-dir`       | Change working directory before running     | —                |
 | `--config`               | Path to a JSON config file                  | `"migrate.json"` |
 | `-h, --help`             | Show help                                   | —                |

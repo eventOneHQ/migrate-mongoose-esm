@@ -31,6 +31,23 @@ export async function down () {
 }
 `
 
+const migrationTemplateTs = `import type { Connection } from 'mongoose'
+
+/**
+ * Make any changes you need to make to the database here
+ */
+export async function up (this: Connection): Promise<void> {
+  // Write migration here
+}
+
+/**
+ * Make any changes that UNDO the up function side effects here (if possible)
+ */
+export async function down (this: Connection): Promise<void> {
+  // Write migration here
+}
+`
+
 /**
  * Migrator class
  */
@@ -43,7 +60,7 @@ export class Migrator {
    * @param {string} [opts.migrationsPath=./migrations] The path to the migration files directory
    * @param {string} opts.dbConnectionUri The URI of the database connection (optional if `connection` is specified)
    * @param {string} [opts.collectionName=migrations] The collection to use for the migrations
-
+   * @param {boolean} [opts.typescript=false] Generate TypeScript migration files (.ts)
    * @param {boolean} [opts.cli=false] Adds logging
    * @param {mongoose.Connection} [opts.connection] A mongoose connection to use
    */
@@ -52,10 +69,12 @@ export class Migrator {
     migrationsPath = './migrations',
     dbConnectionUri,
     collectionName = 'migrations',
+    typescript = false,
     cli = false,
     connection,
   }) {
-    const defaultTemplate = migrationTemplate
+    this.typescript = typescript
+    const defaultTemplate = typescript ? migrationTemplateTs : migrationTemplate
     this.template = templatePath
       ? readFileSync(templatePath, 'utf-8')
       : defaultTemplate
@@ -117,7 +136,8 @@ export class Migrator {
 
       await this.sync()
       const now = Date.now()
-      const newMigrationFile = `${now}-${migrationName}.js`
+      const ext = this.typescript ? 'ts' : 'js'
+      const newMigrationFile = `${now}-${migrationName}.${ext}`
       mkdirSync(this.migrationPath, { recursive: true })
       writeFileSync(join(this.migrationPath, newMigrationFile), this.template)
 
@@ -269,7 +289,7 @@ export class Migrator {
 
       // Go over migrations in folder and delete any files not in DB
       const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+\.js$/.test(file))
+        .filter((file) => /\d{13,}-.+\.(js|ts)$/.test(file))
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(
@@ -326,7 +346,7 @@ export class Migrator {
 
       // Go over migrations in folder and delete any files not in DB
       const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+\.js$/.test(file))
+        .filter((file) => /\d{13,}-.+\.(js|ts)$/.test(file))
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(

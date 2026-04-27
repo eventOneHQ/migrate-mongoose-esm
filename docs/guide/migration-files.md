@@ -89,6 +89,41 @@ export async function up() {
 
 This is only available when running via the programmatic API with a `connection` option. When running via the CLI, import models directly as shown above.
 
+## TypeScript Migration Files
+
+Pass `--typescript` (or set `typescript: true` in `migrate.json`) to generate `.ts` migration files instead of `.js`:
+
+```sh
+npx migrate create add_users --typescript
+```
+
+The generated file uses TypeScript types:
+
+```typescript
+import type { Connection } from 'mongoose'
+
+export async function up(this: Connection): Promise<void> {
+  // Write migration here
+}
+
+export async function down(this: Connection): Promise<void> {
+  // Write migration here
+}
+```
+
+::: tip Running TypeScript migrations
+`@eventonehq/migrate-mongoose` does not transpile TypeScript itself. Run `migrate` under a TypeScript-capable runtime such as [`tsx`](https://github.com/privatenumber/tsx):
+
+```json
+// package.json
+{
+  "scripts": {
+    "migrate": "tsx node_modules/.bin/migrate"
+  }
+}
+```
+:::
+
 ## Custom Templates
 
 To use a custom template for generated migration files, set `templateFile` in your config or pass `-t` on the CLI:

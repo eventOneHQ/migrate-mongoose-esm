@@ -10,6 +10,7 @@ Avoid repeating `--db-connection-uri` and other flags on every command by using 
 | Migrations directory | `--md, --migrations-dir` | `MIGRATE_MIGRATIONS_DIR` | `migrationsDir` | `./migrations` |
 | State collection name | `--collection` | `MIGRATE_COLLECTION` | `collection` | `migrations` |
 | Migration template file | `-t, --template-file` | `MIGRATE_TEMPLATE_FILE` | `templateFile` | — |
+| TypeScript migration files | `--typescript` | `MIGRATE_TYPESCRIPT` | `typescript` | `false` |
 | Change working directory | `-c, --change-dir` | `MIGRATE_CHANGE_DIR` | `changeDir` | — |
 | Config file path | `--config` | — | — | `migrate.json` |
 

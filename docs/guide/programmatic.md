@@ -13,6 +13,7 @@ const migrator = new Migrator({
   dbConnectionUri: 'mongodb://localhost:27017/mydb', // required if no connection
   connection: mongooseConnection, // required if no dbConnectionUri
   collectionName: 'migrations', // default: 'migrations'
+  typescript: false, // set true to generate .ts migration files
   cli: false, // set true to enable console output
 })
 ```

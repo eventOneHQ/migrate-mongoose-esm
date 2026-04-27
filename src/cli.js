@@ -85,6 +85,11 @@ program
     'Change current working directory before running anything',
     configDefaults.changeDir,
   )
+  .option(
+    '--typescript',
+    'Create a TypeScript migration file (.ts)',
+    configDefaults.typescript ?? false,
+  )
 
 program.hook('preAction', () => {
   const opts = program.opts()
@@ -107,6 +112,7 @@ function createMigrator() {
     templatePath: opts.templateFile,
     dbConnectionUri: opts.dbConnectionUri,
     collectionName: opts.collection,
+    typescript: opts.typescript,
     cli: true,
   })
 }
