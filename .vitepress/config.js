@@ -6,6 +6,7 @@ export default defineConfig({
 
   title: 'migrate-mongoose',
   description: 'A migration framework for Mongoose',
+  base: '/migrate-mongoose-esm/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
