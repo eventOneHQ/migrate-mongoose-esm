@@ -23,6 +23,7 @@ export default defineConfig({
           { text: 'Configuration', link: '/guide/configuration' },
           { text: 'Programmatic API', link: '/guide/programmatic' },
           { text: 'Migration Files', link: '/guide/migration-files' },
+          { text: 'CI/CD', link: '/guide/ci-cd' },
           { text: 'Troubleshooting', link: '/guide/troubleshooting' },
         ],
       },
