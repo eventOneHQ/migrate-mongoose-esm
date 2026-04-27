@@ -265,7 +265,6 @@ export class Migrator {
    */
   async sync() {
     try {
-      mkdirSync(this.migrationPath, { recursive: true })
       const filesInMigrationFolder = readdirSync(this.migrationPath)
       const migrationsInDatabase = await this.migrationModel.find({})
 

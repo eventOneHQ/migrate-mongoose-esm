@@ -43,7 +43,7 @@
     "node": ">=20.19.0"
   },
   "dependencies": {
-    "yargs": "^18.0.0"
+    "commander": "^14.0.3"
   },
   "peerDependencies": {
     "mongoose": ">=7 <10"
