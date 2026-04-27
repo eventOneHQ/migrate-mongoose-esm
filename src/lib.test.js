@@ -315,10 +315,10 @@ describe('Migrator.setMongooseConnection()', () => {
 // ---------------------------------------------------------------------------
 
 describe('Migrator.create()', () => {
-  let migrator, migrationsPath, connection
+  let migrator, migrationsPath
 
   beforeEach(async () => {
-    ;({ migrator, migrationsPath, connection } = await makeAutoMigrator({
+    ;({ migrator, migrationsPath } = await makeAutoMigrator({
       collectionName: `create_test_${Date.now()}`,
     }))
   })
@@ -383,10 +383,10 @@ describe('Migrator.create()', () => {
 // ---------------------------------------------------------------------------
 
 describe('Migrator.sync()', () => {
-  let migrator, migrationsPath, connection
+  let migrator, migrationsPath
 
   beforeEach(async () => {
-    ;({ migrator, migrationsPath, connection } = await makeAutoMigrator({
+    ;({ migrator, migrationsPath } = await makeAutoMigrator({
       collectionName: `sync_test_${Date.now()}`,
     }))
   })
@@ -449,10 +449,10 @@ describe('Migrator.sync()', () => {
 // ---------------------------------------------------------------------------
 
 describe('Migrator.list()', () => {
-  let migrator, migrationsPath, connection
+  let migrator, migrationsPath
 
   beforeEach(async () => {
-    ;({ migrator, migrationsPath, connection } = await makeAutoMigrator({
+    ;({ migrator, migrationsPath } = await makeAutoMigrator({
       collectionName: `list_test_${Date.now()}`,
     }))
   })
@@ -500,10 +500,10 @@ describe('Migrator.list()', () => {
 // ---------------------------------------------------------------------------
 
 describe('Migrator.prune()', () => {
-  let migrator, migrationsPath, connection
+  let migrator, migrationsPath
 
   beforeEach(async () => {
-    ;({ migrator, migrationsPath, connection } = await makeAutoMigrator({
+    ;({ migrator, migrationsPath } = await makeAutoMigrator({
       collectionName: `prune_test_${Date.now()}`,
     }))
   })
@@ -564,10 +564,10 @@ describe('Migrator.prune()', () => {
 // ---------------------------------------------------------------------------
 
 describe('Migrator.run()', () => {
-  let migrator, migrationsPath, connection
+  let migrator, migrationsPath
 
   beforeEach(async () => {
-    ;({ migrator, migrationsPath, connection } = await makeAutoMigrator({
+    ;({ migrator, migrationsPath } = await makeAutoMigrator({
       collectionName: `run_test_${Date.now()}`,
     }))
   })
@@ -695,7 +695,6 @@ describe('Migrator.run()', () => {
   })
 
   it('runs up migrations in ascending createdAt order', async () => {
-    const order = []
     const ts1 = 1700010000000
     const ts2 = 1700010000001
     writeFileSync(

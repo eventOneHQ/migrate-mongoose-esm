@@ -20,7 +20,11 @@ function loadConfigAndEnv(configPath) {
   const envVarOptions = {}
   for (const key of Object.keys(process.env)) {
     if (key.startsWith('MIGRATE_')) {
-      envVarOptions[key.slice('MIGRATE_'.length)] = process.env[key]
+      const suffix = key.slice('MIGRATE_'.length)
+      const camelKey = suffix
+        .toLowerCase()
+        .replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+      envVarOptions[camelKey] = process.env[key]
     }
   }
 
@@ -114,12 +118,6 @@ function handleResult(migrator, promise) {
     })
   })
 
-  process.on('exit', () => {
-    // NOTE: This is probably useless since close is async and 'exit' does not wait for the code to finish before
-    // exiting the process, so it's a race condition between exiting and closing.
-    migrator.close()
-  })
-
   promise
     .then(() => {
       process.exit(0)
@@ -149,13 +147,13 @@ program
   .action((migrationName) => {
     commandRan = true
     const migrator = createMigrator()
-    const promise = migrator.create(migrationName)
-    promise.then(() => {
+    const promise = migrator.create(migrationName).then((result) => {
       console.log(
         'Migration created. Run ' +
           `migrate up ${migrationName}`.cyan +
           ' to apply the migration.',
       )
+      return result
     })
     handleResult(migrator, promise)
   })

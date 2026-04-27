@@ -4,7 +4,7 @@ This walkthrough shows a typical migration workflow using the CLI. See the [CLI 
 
 ## Setup
 
-Install the package and start with a `migrate.json` config file so you don't have to pass `--dbConnectionUri` every time:
+Install the package and start with a `migrate.json` config file so you don't have to pass `--db-connection-uri` every time:
 
 ```json
 // migrate.json

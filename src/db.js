@@ -12,7 +12,7 @@ import { Schema } from 'mongoose'
  * @example
  * {
  *   name: 'my-migration',
- *   filename: '149213223424_my-migration.js',
+ *   filename: '149213223424-my-migration.js',
  *   state: 'up'
  * }
  */

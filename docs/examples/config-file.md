@@ -1,6 +1,6 @@
 # Config File Example
 
-By default, `@eventonehq/migrate-mongoose` looks for `migrate.json` in the current directory. This lets you skip passing `--dbConnectionUri` and other flags on every command.
+By default, `@eventonehq/migrate-mongoose` looks for `migrate.json` in the current directory. This lets you skip passing `--db-connection-uri` and other flags on every command.
 
 ## Config File
 
@@ -19,7 +19,7 @@ Never commit a `migrate.json` that contains a real connection URI. Add it to `.g
 With this file in place, commands simplify from:
 
 ```sh
-npx migrate --migrationsDir db/migrations -d mongodb://localhost:27017/myapp create my_migration
+npx migrate --migrations-dir db/migrations -d mongodb://localhost:27017/myapp create my_migration
 ```
 
 …to just:
@@ -102,7 +102,7 @@ For example, you can keep a shared `migrate.json` for your team while overriding
 
 ```sh
 # .env
-MIGRATE_dbConnectionUri=mongodb://localhost:27017/myapp-local
+MIGRATE_DB_CONNECTION_URI=mongodb://localhost:27017/myapp-local
 ```
 
 See [Configuration](../guide/configuration) for the full list of options.

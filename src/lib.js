@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 const ansiColors = { red: 31, yellow: 33, cyan: 36, green: 32 }
 for (const [color, code] of Object.entries(ansiColors)) {
   Object.defineProperty(String.prototype, color, {
+    configurable: true,
     get() {
       return `\x1b[${code}m${this}\x1b[39m`
     },
@@ -121,7 +122,6 @@ export class Migrator {
       writeFileSync(join(this.migrationPath, newMigrationFile), this.template)
 
       // create instance in db
-      await this.connection
       const migrationCreated = await this.migrationModel.create({
         name: migrationName,
         createdAt: now,
@@ -198,12 +198,11 @@ export class Migrator {
       }
     }
 
-    const self = this
     let numMigrationsRan = 0
     const migrationsRan = []
 
     for (const migration of migrationsToRun) {
-      const migrationFilePath = join(self.migrationPath, migration.filename)
+      const migrationFilePath = join(this.migrationPath, migration.filename)
       const migrationFunctions = await import(migrationFilePath)
 
       if (!migrationFunctions[direction]) {
@@ -270,7 +269,7 @@ export class Migrator {
 
       // Go over migrations in folder and delete any files not in DB
       const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+.js$/.test(file))
+        .filter((file) => /\d{13,}-.+\.js$/.test(file))
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(
@@ -327,7 +326,7 @@ export class Migrator {
 
       // Go over migrations in folder and delete any files not in DB
       const migrationsInFolder = filesInMigrationFolder
-        .filter((file) => /\d{13,}-.+.js/.test(file))
+        .filter((file) => /\d{13,}-.+\.js$/.test(file))
         .map((filename) => {
           const fileCreatedAt = parseInt(filename.split('-')[0])
           const existsInDatabase = migrationsInDatabase.some(
@@ -350,9 +349,9 @@ export class Migrator {
 
       if (migrationsToDelete.length) {
         this.log(
-          'Removing migration(s) ',
-          `${migrationsToDelete.join(', ')}`.cyan,
-          ' from database',
+          'Removing migration(s) ' +
+            `${migrationsToDelete.join(', ')}`.cyan +
+            ' from database',
         )
         await this.migrationModel.deleteMany({
           name: { $in: migrationsToDelete },

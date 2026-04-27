@@ -16,9 +16,11 @@ npx migrate -d <mongo-uri> [command] [migration-name] [options]
 
 ## Options
 
+All options can also be set via environment variables or a config file — see the [Configuration reference](./configuration#options-reference) for the full mapping.
+
 | Flag                     | Description                                 | Default          |
 | ------------------------ | ------------------------------------------- | ---------------- |
-| `-d, --dbConnectionUri`  | MongoDB connection URI                      | _(required)_     |
+| `-d, --db-connection-uri`  | MongoDB connection URI                      | _(required)_     |
 | `--collection`           | Collection name for storing migration state | `"migrations"`   |
 | `--md, --migrations-dir` | Path to migration files                     | `"./migrations"` |
 | `-t, --template-file`    | Custom template file for new migrations     | —                |

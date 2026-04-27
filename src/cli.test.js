@@ -485,7 +485,7 @@ describe('CLI – configuration', () => {
     // Pass the URI via env var instead of -d flag
     const { exitCode } = await runCLI(
       ['--migrations-dir', migrationsDir, '--collection', col, 'list'],
-      { env: { MIGRATE_dbConnectionUri: mongoUri } },
+      { env: { MIGRATE_DB_CONNECTION_URI: mongoUri } },
     )
     expect(exitCode).toBe(0)
   })
