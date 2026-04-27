@@ -160,6 +160,7 @@ dist
 .history
 .ionide
 
+.DS_Store
 # End of https://www.toptal.com/developers/gitignore/api/node,visualstudiocode
-
-docs/
+.vitepress/cache
+.vitepress/dist

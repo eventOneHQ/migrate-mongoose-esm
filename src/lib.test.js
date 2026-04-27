@@ -61,7 +61,7 @@ export async function down() {}
 }
 
 /**
- * Build a Migrator with a fresh migrations dir.
+ * Build a Migrator with autosync=true and a fresh migrations dir.
  * Returns { migrator, migrationsPath, connection }.
  */
 async function makeAutoMigrator(overrides = {}) {
