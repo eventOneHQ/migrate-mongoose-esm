@@ -22,14 +22,8 @@ export default defineConfig({
           { text: 'CLI Reference', link: '/guide/cli' },
           { text: 'Configuration', link: '/guide/configuration' },
           { text: 'Programmatic API', link: '/guide/programmatic' },
-        ],
-      },
-      {
-        text: 'Examples',
-        items: [
-          { text: 'CLI Usage', link: '/examples/cli-usage' },
-          { text: 'Config File', link: '/examples/config-file' },
-          { text: 'Programmatic Usage', link: '/examples/programmatic' },
+          { text: 'Migration Files', link: '/guide/migration-files' },
+          { text: 'Troubleshooting', link: '/guide/troubleshooting' },
         ],
       },
     ],

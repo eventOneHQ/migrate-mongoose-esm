@@ -6,6 +6,10 @@
 - A running MongoDB instance
 - Mongoose (v7, v8, or v9) installed in your project
 
+::: warning ESM only
+`@eventonehq/migrate-mongoose` is an ES module. Your project must have `"type": "module"` in `package.json`, or migration files must use the `.mjs` extension. It cannot be `require()`'d in a CommonJS context.
+:::
+
 ## Installation
 
 `mongoose` is a peer dependency and must be installed alongside this package:
@@ -51,49 +55,4 @@ npx migrate list -d mongodb://localhost:27017/mydb
 The connection URI must include the database name (e.g. `/mydb`). See [Configuration](./configuration) to avoid repeating it on every command.
 :::
 
-## Using Mongoose Models in Migrations
-
-`@eventonehq/migrate-mongoose` opens its own independent MongoDB connection for state tracking, so it makes no assumptions about your application's connection setup. Import your models directly:
-
-**`models/user.model.js`**
-
-```javascript
-import { Schema, model } from 'mongoose'
-
-const UserSchema = new Schema({
-  firstName: String,
-  lastName: String,
-})
-
-export const UserModel = model('user', UserSchema)
-```
-
-**`models/index.js`**
-
-```javascript
-import { connect } from 'mongoose'
-import { UserModel } from './user.model.js'
-
-connect('mongodb://localhost:27017/mydb')
-
-export { UserModel }
-```
-
-**`migrations/1459287720919-my-migration.js`**
-
-```javascript
-import { UserModel } from '../models/index.js'
-
-export async function up() {
-  await UserModel.create({ firstName: 'Ada', lastName: 'Lovelace' })
-}
-```
-
-When using the [programmatic API](./programmatic), access models via `this` (the Mongoose connection passed to `Migrator`):
-
-```javascript
-export async function up() {
-  // Equivalent to: connection.model('user')
-  await this('user').create({ firstName: 'Ada', lastName: 'Lovelace' })
-}
-```
+For details on the migration file format, model imports, and naming conventions, see [Migration Files](./migration-files).
