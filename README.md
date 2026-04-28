@@ -52,7 +52,7 @@ Contributions are welcome. To get started:
 
 ## Acknowledgements
 
-- [migrate-mongoose](https://github.com/balmasi/migrate-mongoose) — the original library that inspired this project.
+- [migrate-mongoose](https://github.com/balmasi/migrate-mongoose) — this project was forked from `migrate-mongoose`.
 
 ---
 
