@@ -1,9 +1,9 @@
 name: Release
 on:
-    workflow_run:
-        workflows: ["Test"]
-        branches: [beta, next]
-        types: [completed]
+    push:
+        branches:
+            - beta
+            - next
 
 permissions:
     contents: read
@@ -12,7 +12,6 @@ jobs:
     release:
         name: Release
         runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         permissions:
             contents: write # to be able to publish a GitHub release
             issues: write # to be able to comment on released issues
@@ -29,6 +28,8 @@ jobs:
                   node-version: "lts/*"
             - name: Install dependencies
               run: npm clean-install
+            - name: Run tests
+              run: npm test
             - name: Verify the integrity of provenance attestations and registry signatures
                   for installed dependencies
               run: npm audit signatures
