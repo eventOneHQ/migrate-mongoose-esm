@@ -38,6 +38,7 @@
   ],
   "author": "eventOne, Inc. <team@event1.io>",
   "license": "MIT",
+  "homepage": "https://eventonehq.github.io/migrate-mongoose-esm",
   "repository": {
     "type": "git",
     "url": "https://github.com/eventOneHQ/migrate-mongoose-esm.git"
